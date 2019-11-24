@@ -3,19 +3,19 @@ pipeline {
   stages {
     stage('Build') {
       steps {
-        sh 'ping -c 2 localhost'
+        sh 'echo \'Building\''
       }
     }
 
     stage('Test') {
       steps {
-        sh 'ping -c 3 localhost'
+        sh 'echo \'Testing\''
       }
     }
 
     stage('Deploy') {
       steps {
-        sh 'ping -c 4 localhost'
+        sh 'echo \'Deploying\''
       }
     }
 
