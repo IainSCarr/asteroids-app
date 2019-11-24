@@ -20,4 +20,7 @@ pipeline {
     }
 
   }
+  environment {
+    PATH = 'C:\\Program Files\\Git\\usr\\bin'
+  }
 }
