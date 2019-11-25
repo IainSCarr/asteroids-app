@@ -1,0 +1,23 @@
+{
+  "name": "asteroids-app",
+  "version": "1.0.0",
+  "description": "Multiplayer HTML game.",
+  "main": "app.js",
+  "dependencies": {
+    "express": "^4.17.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/IainSCarr/asteroids-app.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/IainSCarr/asteroids-app/issues"
+  },
+  "homepage": "https://github.com/IainSCarr/asteroids-app#readme"
+}
