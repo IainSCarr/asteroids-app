@@ -4,9 +4,9 @@ var app = express();
 
 app.use(express.static("client"));
 
-app.get('/', function (req, res) {
-  res.status(200).send('Hello World');
-})
+app.get('/', function (request, response) {
+  response.status(200).sendFile("/", {root: "client"});
+});
 
 app.listen(9000, function() {
   console.log("Listening on 9000");
