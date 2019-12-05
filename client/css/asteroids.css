@@ -1,0 +1,14 @@
+h1 {
+  font-family: 'Fredoka One', cursive;
+  text-align: center;
+  color: white;
+}
+
+.margin {
+  background-color: gray;
+}
+
+.center {
+  background-color: black;
+  height: 500px;
+}
