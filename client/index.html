@@ -45,7 +45,38 @@
       socket.on('newPositions',function(data){
         ctx.clearRect(0,0,500,500);
         for (var i = 0; i < data.length; i++) {
+          ctx.save();
+          ctx.beginPath();
+          ctx.translate(data[i].x, data[i].y);
+          ctx.rotate(data[i].angle * Math.PI/180);
           ctx.fillText(data[i].number, data[i].x,data[i].y);
+          ctx.rect(-2.5, -2.5, 5, 5);
+          ctx.fillStyle = "red";
+          ctx.fill();
+          ctx.closePath();
+          ctx.restore();
+        }
+
+        document.onkeydown = function(event) {
+          if (event.keyCode === 68) // d
+            socket.emit('keyPress', {inputId:'right', state:true});
+          else if(event.keyCode === 65) // a
+            socket.emit('keyPress', {inputId:'left', state:true});
+          else if(event.keyCode === 87) // w
+            socket.emit('keyPress', {inputId:'up', state:true});
+          else if(event.keyCode === 32) // spacebar
+            socket.emit('keyPress', {inputId:'shoot', state:true});
+        }
+
+        document.onkeyup = function(event) {
+          if (event.keyCode === 68) // d
+            socket.emit('keyPress', {inputId:'right', state:false});
+          else if(event.keyCode === 65) // a
+            socket.emit('keyPress', {inputId:'left', state:false});
+          else if(event.keyCode === 87) // w
+            socket.emit('keyPress', {inputId:'up', state:false});
+          else if(event.keyCode === 32) // spacebar
+            socket.emit('keyPress', {inputId:'shoot', state:false});
         }
 
       });
