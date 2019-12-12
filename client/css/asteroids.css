@@ -4,6 +4,14 @@ h1 {
   color: white;
 }
 
+#ctx {
+  width: 500px;
+  height: 500px;
+  margin: auto;
+  display: block;
+}
+
+
 .margin {
   background-color: gray;
 }
