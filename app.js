@@ -3,11 +3,15 @@ var app = express();
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
 
-app.use(express.static("client"));
+//app.use(express.static("client"));
+
+app.use('/client', express.static(__dirname + '/client'));
+
 
 app.get('/', function (request, response) {
-  response.status(200).sendFile(__dirname + '/index.html');
+  response.status(200).sendFile(__dirname + '/client/index.html');
 });
+
 
 server.listen(9000, function() {
   console.log("Listening on 9000");
@@ -26,7 +30,7 @@ class Player {
     this.pressingLeft = false;
     this.pressingUp = false;
     this.isShooting = false;
-    this.maxSpeed = 10;
+    this.maxSpeed = 5;
     this.direction = 0;
     this.turnSpeed = 5;
     this.acceleration = 0.1;
@@ -39,16 +43,14 @@ class Player {
     if (this.pressingLeft)
       this.direction = (this.direction - this.turnSpeed) % 360;
 
-    console.log(this.direction);
-
     if (this.pressingUp) {
       this.velocity[0] += this.acceleration * Math.sin(this.direction * Math.PI / 180);
-      if (this.velocity[0] > this.maxSpeed)
-        this.velocity[0] = this.maxSpeed;
+    if (this.velocity[0] > this.maxSpeed)
+      this.velocity[0] = this.maxSpeed;
 
-      this.velocity[1] -= this.acceleration * Math.cos(this.direction * Math.PI / 180);
-      if (this.velocity[1] > this.maxSpeed)
-        this.velocity[1] = this.maxSpeed;
+    this.velocity[1] -= this.acceleration * Math.cos(this.direction * Math.PI / 180);
+    if (this.velocity[1] > this.maxSpeed)
+      this.velocity[1] = this.maxSpeed;
     }
 
     this.x = this.x + this.velocity[0];
@@ -92,6 +94,7 @@ setInterval(function(){
       x:player.x,
       y:player.y,
       angle:player.direction,
+      engine:player.pressingUp,
       number:player.number
     });
   }
