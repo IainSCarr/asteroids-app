@@ -20,29 +20,52 @@ server.listen(9000, function() {
 var Socket_List = {};
 var Player_List = {};
 
-class Player {
-  constructor(id) {
-    this.id = id;
+class Enity {
+  constructor() {
     this.x = 50;
     this.y = 50;
-    this.number = "" + Math.floor(10* Math.random());
+    this.velocity = [0, 0];
+    this.id = "";
+  }
+
+  update() {
+    updatePosition();
+  }
+
+  updatePosition() {
+    this.x += velocity[0];
+    this.y += velocity[1];
+  }
+}
+
+class Player extends Entity {
+  constructor(id) {
+    super();
+    this.id = id;
     this.pressingRight = false;
     this.pressingLeft = false;
     this.pressingUp = false;
     this.isShooting = false;
     this.maxSpeed = 5;
     this.direction = 0;
-    this.turnSpeed = 7;
+    this.turnSpeed = 6;
     this.acceleration = 0.1;
-    this.velocity = [0, 0];
   }
 
-  updatePosition() {
+  update() {
+    updateDirection();
+    updateVelocity();
+    super.updatePosition();
+  }
+
+  updateDirection() {
     if (this.pressingRight)
       this.direction = (this.direction + this.turnSpeed) % 360;
     if (this.pressingLeft)
       this.direction = (this.direction - this.turnSpeed) % 360;
+  }
 
+  updateVelocity() {
     if (this.pressingUp) {
       this.velocity[0] += this.acceleration * Math.sin(this.direction * Math.PI / 180);
     if (this.velocity[0] > this.maxSpeed)
@@ -52,9 +75,6 @@ class Player {
     if (this.velocity[1] > this.maxSpeed)
       this.velocity[1] = this.maxSpeed;
     }
-
-    this.x = this.x + this.velocity[0];
-    this.y = this.y + this.velocity[1];
   }
 }
 
