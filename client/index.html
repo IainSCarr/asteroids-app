@@ -61,9 +61,9 @@
           ctx.translate(data.player[i].x, data.player[i].y);
           ctx.rotate(data.player[i].angle * Math.PI/180);
           if (data.player[i].engine)
-            ctx.drawImage(engineon, -5, -5, 10 ,10);
+            ctx.drawImage(engineon, -4, -4, 8 ,8);
           else
-            ctx.drawImage(engineoff, -5, -5, 10 ,10);
+            ctx.drawImage(engineoff, -4, -4, 8 ,8);
           ctx.closePath();
           ctx.restore();
         }
@@ -72,7 +72,7 @@
           ctx.save();
           ctx.beginPath();
           ctx.translate(data.bullet[i].x, data.bullet[i].y);
-          ctx.drawImage(bullet, -2, -2, 4, 4);
+          ctx.drawImage(bullet, -0.5, -0.5, 1, 1);
           ctx.closePath();
           ctx.restore();
         }
