@@ -18,9 +18,8 @@ server.listen(9000, function() {
 });
 
 var Socket_List = {};
-var Player_List = {};
 
-class Enity {
+class Entity {
   constructor() {
     this.x = 50;
     this.y = 50;
@@ -29,12 +28,12 @@ class Enity {
   }
 
   update() {
-    updatePosition();
+    this.updatePosition();
   }
 
   updatePosition() {
-    this.x += velocity[0];
-    this.y += velocity[1];
+    this.x += this.velocity[0];
+    this.y += this.velocity[1];
   }
 }
 
@@ -50,12 +49,7 @@ class Player extends Entity {
     this.direction = 0;
     this.turnSpeed = 6;
     this.acceleration = 0.1;
-  }
-
-  update() {
-    updateDirection();
-    updateVelocity();
-    super.updatePosition();
+    Player.list[this.id] = this;
   }
 
   updateDirection() {
@@ -76,22 +70,17 @@ class Player extends Entity {
       this.velocity[1] = this.maxSpeed;
     }
   }
+
+  update() {
+    this.updateDirection();
+    this.updateVelocity();
+    super.update();
+  }
 }
 
-io.sockets.on('connection', function(socket) {
-  console.log('Socket connected');
-
-  socket.id = Math.random();
-  Socket_List[socket.id] = socket;
-
+Player.list = {};
+Player.onConnect = function(socket) {
   var player = new Player(socket.id);
-  Player_List[socket.id] = player;
-
-  socket.on('disconnect', function() {
-    delete Socket_List[socket.id];
-    delete Player_List[socket.id];
-  });
-
   socket.on('keyPress', function(data) {
     if (data.inputId === 'left')
       player.pressingLeft = data.state;
@@ -102,22 +91,89 @@ io.sockets.on('connection', function(socket) {
     else if (data.inputId === 'shoot')
       player.isShooting = data.state;
   });
-});
+}
 
-setInterval(function(){
+Player.onDisconnect = function(socket) {
+  delete Player.list[socket.id];
+}
+
+Player.update = function() {
   var pack = [];
-
-  for(var i in Player_List) {
-    var player = Player_List[i];
-    player.updatePosition();
+  for(var i in Player.list) {
+    var player = Player.list[i];
+    player.update();
     pack.push({
       x:player.x,
       y:player.y,
       angle:player.direction,
       engine:player.pressingUp,
-      number:player.number
     });
   }
+  return pack;
+}
+
+class Bullet extends Entity {
+  constructor(angle) {
+    super();
+    this.id = Math.random();
+    this.velocity = [Math.cos(angle/180*Math.PI) * 10, Math.sin(angle/180*Math.PI) * 10];
+    this.timer = 0;
+    this.toRemove = false;
+    Bullet.list[this.id] = this;
+  }
+
+  update() {
+    if (this.timer++ > 100) {
+      this.toRemove = true;
+    }
+    super.update();
+  }
+}
+
+Bullet.list = {};
+
+Bullet.update = function() {
+  if(Math.random() < 0.1) {
+    var newBullet = new Bullet(Math.random() * 360);
+  }
+
+  var pack = [];
+  for(var i in Bullet.list) {
+    var bullet = Bullet.list[i];
+    bullet.update();
+
+    if (bullet.toRemove == true) {
+      delete Bullet.list[i];
+    }
+
+    pack.push({
+      x:bullet.x,
+      y:bullet.y
+    });
+  }
+
+  return pack;
+}
+
+io.sockets.on('connection', function(socket) {
+  console.log('Socket connected');
+
+  socket.id = Math.random();
+  Socket_List[socket.id] = socket;
+
+  Player.onConnect(socket);
+
+  socket.on('disconnect', function() {
+    delete Socket_List[socket.id];
+    Player.onDisconnect(socket)
+  });
+});
+
+setInterval(function(){
+  var pack = {
+    player:Player.update(),
+    bullet:Bullet.update()
+  };
 
   for(var i in Socket_List) {
     var socket = Socket_List[i];
