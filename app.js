@@ -32,7 +32,7 @@ class Player {
     this.isShooting = false;
     this.maxSpeed = 5;
     this.direction = 0;
-    this.turnSpeed = 5;
+    this.turnSpeed = 7;
     this.acceleration = 0.1;
     this.velocity = [0, 0];
   }
