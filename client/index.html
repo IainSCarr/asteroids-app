@@ -8,7 +8,7 @@
     <link href="https://fonts.googleapis.com/css?family=Fredoka+One&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
 
-    <link rel="stylesheet" href="./css/asteroids.css">
+    <link rel="stylesheet" href="/client/css/asteroids.css">
 
     <!-- socket.io -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.3/socket.io.js"></script>
@@ -39,13 +39,52 @@
       var socket = io();
 
       var ctx = document.getElementById('ctx').getContext("2d");
-      ctx.font = "30px Arial";
-      ctx.fillStyle = "white";
+
+      var engineoff = new Image();
+      engineoff.src = '/client/resources/ship-engineoff.png';
+
+      var engineon = new Image();
+      engineon.src = '/client/resources/ship-engineon.png';
+
+      var asteroidLarge = new Image();
+      asteroidLarge.src = '/client/resources/asteroid-large.png';
+
 
       socket.on('newPositions',function(data){
-        ctx.clearRect(0,0,500,500);
+        ctx.clearRect(0,0,700,700);
         for (var i = 0; i < data.length; i++) {
-          ctx.fillText(data[i].number, data[i].x,data[i].y);
+          ctx.save();
+          ctx.beginPath();
+          ctx.translate(data[i].x, data[i].y);
+          ctx.rotate(data[i].angle * Math.PI/180);
+          if (data[i].engine)
+            ctx.drawImage(engineon, -5, -5, 10 ,10);
+          else
+            ctx.drawImage(engineoff, -5, -5, 10 ,10);
+          ctx.closePath();
+          ctx.restore();
+        }
+
+        document.onkeydown = function(event) {
+          if (event.keyCode === 68) // d
+            socket.emit('keyPress', {inputId:'right', state:true});
+          else if(event.keyCode === 65) // a
+            socket.emit('keyPress', {inputId:'left', state:true});
+          else if(event.keyCode === 87) // w
+            socket.emit('keyPress', {inputId:'up', state:true});
+          else if(event.keyCode === 32) // spacebar
+            socket.emit('keyPress', {inputId:'shoot', state:true});
+        }
+
+        document.onkeyup = function(event) {
+          if (event.keyCode === 68) // d
+            socket.emit('keyPress', {inputId:'right', state:false});
+          else if(event.keyCode === 65) // a
+            socket.emit('keyPress', {inputId:'left', state:false});
+          else if(event.keyCode === 87) // w
+            socket.emit('keyPress', {inputId:'up', state:false});
+          else if(event.keyCode === 32) // spacebar
+            socket.emit('keyPress', {inputId:'shoot', state:false});
         }
 
       });
