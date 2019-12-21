@@ -71,10 +71,19 @@ class Player extends Entity {
     }
   }
 
+  shootBullet() {
+    var newBullet = new Bullet(this.direction);
+    newBullet.x = this.x;
+    newBullet.y = this.y;
+  }
+
   update() {
     this.updateDirection();
     this.updateVelocity();
     super.update();
+    if (this.isShooting) {
+      this.shootBullet();
+    }
   }
 }
 
@@ -116,7 +125,7 @@ class Bullet extends Entity {
   constructor(angle) {
     super();
     this.id = Math.random();
-    this.velocity = [Math.cos(angle/180*Math.PI) * 10, Math.sin(angle/180*Math.PI) * 10];
+    this.velocity = [Math.sin(angle * Math.PI / 180) * 10, Math.cos(angle * Math.PI / 180) * -10];
     this.timer = 0;
     this.toRemove = false;
     Bullet.list[this.id] = this;
@@ -133,9 +142,7 @@ class Bullet extends Entity {
 Bullet.list = {};
 
 Bullet.update = function() {
-  if(Math.random() < 0.1) {
-    var newBullet = new Bullet(Math.random() * 360);
-  }
+
 
   var pack = [];
   for(var i in Bullet.list) {
