@@ -60,10 +60,10 @@ class Player extends Entity {
     this.pressingLeft = false;
     this.pressingUp = false;
     this.isShooting = false;
-    this.maxSpeed = 5;
+    this.maxSpeed = 8;
     this.direction = 0;
     this.turnSpeed = 6;
-    this.acceleration = 0.1;
+    this.acceleration = 0.4;
     Player.list[this.id] = this;
   }
 
@@ -79,10 +79,14 @@ class Player extends Entity {
       this.velocity[0] += this.acceleration * Math.sin(this.direction * Math.PI / 180);
     if (this.velocity[0] > this.maxSpeed)
       this.velocity[0] = this.maxSpeed;
+    else if (this.velocity[0] < -this.maxSpeed)
+      this.velocity[0] = -this.maxSpeed;
 
     this.velocity[1] -= this.acceleration * Math.cos(this.direction * Math.PI / 180);
     if (this.velocity[1] > this.maxSpeed)
       this.velocity[1] = this.maxSpeed;
+    else if (this.velocity[1] < -this.maxSpeed)
+      this.velocity[1] = -this.maxSpeed;
     }
   }
 
