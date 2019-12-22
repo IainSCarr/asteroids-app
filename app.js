@@ -148,7 +148,7 @@ class Bullet extends Entity {
   }
 
   update() {
-    if (this.timer++ > 100) {
+    if (this.timer++ > 50) {
       this.toRemove = true;
     }
     super.update();
