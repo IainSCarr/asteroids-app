@@ -26,7 +26,7 @@
         </div>
         <div class="col-sm-8 center">
           <h1 class="display-1">ASTEROIDS</h1>
-          <canvas id="ctx" style="border:1px solid white"></canvas>
+          <canvas id="ctx" style="border:1px solid white" width="700" height="700"></canvas>
         </div>
         <div class="col-sm-2 margin">
           margin
@@ -61,9 +61,9 @@
           ctx.translate(data.player[i].x, data.player[i].y);
           ctx.rotate(data.player[i].angle * Math.PI/180);
           if (data.player[i].engine)
-            ctx.drawImage(engineon, -4, -4, 8 ,8);
+            ctx.drawImage(engineon, -10, -10, 20 ,20);
           else
-            ctx.drawImage(engineoff, -4, -4, 8 ,8);
+            ctx.drawImage(engineoff, -10, -10, 20 ,20);
           ctx.closePath();
           ctx.restore();
         }
