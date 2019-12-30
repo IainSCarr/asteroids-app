@@ -190,7 +190,17 @@ io.sockets.on('connection', function(socket) {
 
   Player.onConnect(socket);
 
+  var playerName = ("" + socket.id);
+  for (var i in Socket_List) {
+    Socket_List[i].emit('addToChat', playerName + ' connected');
+  }
+
   socket.on('disconnect', function(data) {
+    var playerName = ("" + socket.id);
+    for (var i in Socket_List) {
+      Socket_List[i].emit('addToChat', playerName + ' disconnected');
+    }
+
     delete Socket_List[socket.id];
     Player.onDisconnect(socket);
   });

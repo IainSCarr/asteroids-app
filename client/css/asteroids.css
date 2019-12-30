@@ -11,7 +11,9 @@ h1 {
 
 #chat-text {
   height: 500px;
+  color: white;
   overflow-y: scroll;
+  overflow-x: hidden;
 }
 
 #chat-input {
@@ -20,7 +22,7 @@ h1 {
 
 
 .margin {
-  background-color: gray;
+  background-color: black;
 }
 
 .center {
