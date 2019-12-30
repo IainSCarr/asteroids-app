@@ -47,7 +47,8 @@
       var arrow_keys_handler = function(e) {
         switch(e.keyCode){
             case 37: case 39: case 38:  case 40: // Arrow keys
-            case 32: e.preventDefault(); break; // Space
+            case 32:
+              if (e.target == document.body) e.preventDefault(); break; // Space
             default: break; // do not block other keys
         }
       };
@@ -109,24 +110,26 @@
         }
 
         document.onkeydown = function(event) {
-          if (event.keyCode === 68) // d
+          if (event.keyCode === 39) // right arrow
             socket.emit('keyPress', {inputId:'right', state:true});
-          else if(event.keyCode === 65) // a
+          else if(event.keyCode === 37) // left arrow
             socket.emit('keyPress', {inputId:'left', state:true});
-          else if(event.keyCode === 87) // w
+          else if(event.keyCode === 38) // up arrow
             socket.emit('keyPress', {inputId:'up', state:true});
           else if(event.keyCode === 32) // spacebar
-            socket.emit('keyPress', {inputId:'shoot', state:true});
+            if (document.body == document.activeElement) // if focus is on game
+              socket.emit('keyPress', {inputId:'shoot', state:true});
         }
 
         document.onkeyup = function(event) {
-          if (event.keyCode === 68) // d
+          if (event.keyCode === 39) // right arrow
             socket.emit('keyPress', {inputId:'right', state:false});
-          else if(event.keyCode === 65) // a
+          else if(event.keyCode === 37) // left arrow
             socket.emit('keyPress', {inputId:'left', state:false});
-          else if(event.keyCode === 87) // w
+          else if(event.keyCode === 38) // up arrow
             socket.emit('keyPress', {inputId:'up', state:false});
           else if(event.keyCode === 32) // spacebar
+          if (document.body == document.activeElement) // if focus is on game
             socket.emit('keyPress', {inputId:'shoot', state:false});
         }
 
