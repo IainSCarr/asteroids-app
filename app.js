@@ -34,21 +34,21 @@ class Entity {
   updatePosition() {
     this.x += this.velocity[0];
 
-    if (this.x < 0) {
+    if (this.x < 0)
       this.x = 700;
-    }
-    else if (this.x > 700) {
+    else if (this.x > 700)
       this.x = 0;
-    }
 
     this.y += this.velocity[1];
 
-    if (this.y < 0) {
+    if (this.y < 0)
       this.y = 700;
-    }
-    else if (this.y > 700) {
+    else if (this.y > 700)
       this.y = 0;
-    }
+  }
+
+  getDistance(entity) {
+    return Math.sqrt(Math.pow(this.x - entity.x, 2) + Math.pow(this.y - entity.y, 2));
   }
 }
 
@@ -94,7 +94,7 @@ class Player extends Entity {
   }
 
   shootBullet() {
-    var newBullet = new Bullet(this.direction);
+    var newBullet = new Bullet(this.id, this.direction);
     newBullet.x = this.x;
     newBullet.y = this.y;
     this.canShoot = false;
@@ -104,9 +104,8 @@ class Player extends Entity {
     this.updateDirection();
     this.updateVelocity();
     super.update();
-    if (this.isShooting && this.canShoot) {
+    if (this.isShooting && this.canShoot)
       this.shootBullet();
-    }
   }
 }
 
@@ -148,8 +147,9 @@ Player.update = function() {
 }
 
 class Bullet extends Entity {
-  constructor(angle) {
+  constructor(parent, angle) {
     super();
+    this.parent = parent;
     this.id = Math.random();
     this.speed = 12;
     this.velocity = [Math.sin(angle * Math.PI / 180) * this.speed, Math.cos(angle * Math.PI / 180) * -this.speed];
@@ -163,27 +163,32 @@ class Bullet extends Entity {
       this.toRemove = true;
     }
     super.update();
+
+    for (var i in Player.list) {
+      var player = Player.list[i];
+      if (this.getDistance(player) < 12 && this.parent !== player.id) {
+        // handle collision
+        this.toRemove = true;
+      }
+    }
   }
 }
 
 Bullet.list = {};
 
 Bullet.update = function() {
-
-
   var pack = [];
   for(var i in Bullet.list) {
     var bullet = Bullet.list[i];
     bullet.update();
 
-    if (bullet.toRemove == true) {
+    if (bullet.toRemove == true)
       delete Bullet.list[i];
-    }
-
-    pack.push({
-      x:bullet.x,
-      y:bullet.y
-    });
+    else
+      pack.push({
+        x:bullet.x,
+        y:bullet.y
+      });
   }
 
   return pack;
