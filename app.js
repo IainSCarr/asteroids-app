@@ -68,9 +68,11 @@ class Player extends Entity {
   }
 
   updateDirection() {
-    if (this.pressingRight)
-      this.direction = (this.direction + this.turnSpeed) % 360;
-    if (this.pressingLeft)
+    if (this.pressingRight) {
+      if (!this.pressingLeft)
+        this.direction = (this.direction + this.turnSpeed) % 360;
+    }
+    else if (this.pressingLeft)
       this.direction = (this.direction - this.turnSpeed) % 360;
   }
 
@@ -144,7 +146,7 @@ class Bullet extends Entity {
   constructor(angle) {
     super();
     this.id = Math.random();
-    this.speed = 10;
+    this.speed = 12;
     this.velocity = [Math.sin(angle * Math.PI / 180) * this.speed, Math.cos(angle * Math.PI / 180) * -this.speed];
     this.timer = 0;
     this.toRemove = false;

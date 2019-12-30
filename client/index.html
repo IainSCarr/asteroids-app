@@ -129,8 +129,8 @@
           else if(event.keyCode === 38) // up arrow
             socket.emit('keyPress', {inputId:'up', state:false});
           else if(event.keyCode === 32) // spacebar
-          if (document.body == document.activeElement) // if focus is on game
-            socket.emit('keyPress', {inputId:'shoot', state:false});
+            if (document.body == document.activeElement) // if focus is on game
+              socket.emit('keyPress', {inputId:'shoot', state:false});
         }
 
       });
