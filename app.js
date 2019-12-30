@@ -190,10 +190,19 @@ io.sockets.on('connection', function(socket) {
 
   Player.onConnect(socket);
 
-  socket.on('disconnect', function() {
+  socket.on('disconnect', function(data) {
     delete Socket_List[socket.id];
-    Player.onDisconnect(socket)
+    Player.onDisconnect(socket);
   });
+
+  socket.on('sendMessage', function(data) {
+    var playerName = ("" + socket.id);
+    for (var i in Socket_List) {
+      Socket_List[i].emit('addToChat', playerName + ': ' + data);
+    }
+  });
+
+
 });
 
 setInterval(function(){

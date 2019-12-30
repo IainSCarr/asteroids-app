@@ -9,6 +9,15 @@ h1 {
   display: block;
 }
 
+#chat-text {
+  height: 500px;
+  overflow-y: scroll;
+}
+
+#chat-input {
+
+}
+
 
 .margin {
   background-color: gray;
