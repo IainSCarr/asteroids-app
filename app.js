@@ -60,6 +60,7 @@ class Player extends Entity {
     this.pressingLeft = false;
     this.pressingUp = false;
     this.isShooting = false;
+    this.canShoot = true;
     this.maxSpeed = 8;
     this.direction = 0;
     this.turnSpeed = 6;
@@ -96,13 +97,14 @@ class Player extends Entity {
     var newBullet = new Bullet(this.direction);
     newBullet.x = this.x;
     newBullet.y = this.y;
+    this.canShoot = false;
   }
 
   update() {
     this.updateDirection();
     this.updateVelocity();
     super.update();
-    if (this.isShooting) {
+    if (this.isShooting && this.canShoot) {
       this.shootBullet();
     }
   }
@@ -118,8 +120,11 @@ Player.onConnect = function(socket) {
       player.pressingRight = data.state;
     else if (data.inputId === 'up')
       player.pressingUp = data.state;
-    else if (data.inputId === 'shoot')
+    else if (data.inputId === 'shoot') {
       player.isShooting = data.state;
+      if (!data.state) // enable firing when user releases fire button
+        player.canShoot = true;
+    }
   });
 }
 
@@ -210,7 +215,7 @@ io.sockets.on('connection', function(socket) {
   socket.on('sendMessage', function(data) {
     var playerName = ("" + socket.id);
     for (var i in Socket_List) {
-      Socket_List[i].emit('addToChat', playerName + ': ' + data);
+      Socket_List[i].emit('addToChat', '<strong>' + playerName + ':</strong> ' + data);
     }
   });
 
