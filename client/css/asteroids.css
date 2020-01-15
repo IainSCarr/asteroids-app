@@ -1,7 +1,6 @@
 h1 {
   font-family: 'Fredoka One', cursive;
   text-align: center;
-  color: white;
 }
 
 #ctx {
@@ -20,16 +19,7 @@ h1 {
   width: auto;
 }
 
-p {
+body {
   color: white;
-}
-
-
-.margin {
   background-color: black;
-}
-
-.center {
-  background-color: black;
-  height: 900px;
 }

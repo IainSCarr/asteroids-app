@@ -8,7 +8,7 @@ var io = require('socket.io')(server);
 
 var uri = "mongodb+srv://admin:soft355@ic-cluster-snuim.mongodb.net/Asteroids?retryWrites=true&w=majority";
 
-
+app.use(express.static("client"));
 app.use('/client', express.static(__dirname + '/client'));
 
 app.get('/', function (request, response) {
