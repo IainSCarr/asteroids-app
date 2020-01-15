@@ -5,18 +5,27 @@ h1 {
 }
 
 #ctx {
-  width: 700px;
-  height: 700px;
   margin: auto;
   display: block;
 }
 
+#chat-text {
+  height: 500px;
+  color: white;
+  overflow-y: scroll;
+  overflow-x: hidden;
+}
+
+#chat-input {
+  width: auto;
+}
+
 
 .margin {
-  background-color: gray;
+  background-color: black;
 }
 
 .center {
   background-color: black;
-  height: 1000px;
+  height: 900px;
 }
