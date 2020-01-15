@@ -2,12 +2,12 @@ var express = require("express");
 var mongoose = require("mongoose");
 var db = require("./db");
 var schemas = require("./schemas");
+var app = express();
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
 
 var uri = "mongodb+srv://admin:soft355@ic-cluster-snuim.mongodb.net/Asteroids?retryWrites=true&w=majority";
 
-var app = express();
 
 app.use('/client', express.static(__dirname + '/client'));
 
@@ -15,24 +15,30 @@ app.get('/', function (request, response) {
   response.status(200).sendFile(__dirname + '/client/index.html');
 });
 
+app.get('/highscores', function(request, response) {
+  db.getHighScores().then(function(scores) {
+    response.contentType("application/json");
+    response.send(scores);
+  });
+});
 
 server.listen(9000, function() {
   mongoose.connect(uri, {useNewUrlParser: true, useUnifiedTopology: true}).then((test) => {
     console.log("Connected to DB");
 
-    var score = new schemas.Score({
-      name: "700 Test",
-      score: 700
-    });
-
-    score.save();
-
-    db.getHighScores().then(function(scores) {
-      console.log("Scores retrieved!");
-      for (var i = 0; i < scores.length; i++) {
-        console.log(i + ": " + scores[i].name + " " + scores[i].score + " " + scores[i].date);
-      }
-    });
+    // var score = new schemas.Score({
+    //   name: "700 Test",
+    //   score: 700
+    // });
+    //
+    // score.save();
+    //
+    // db.getHighScores().then(function(scores) {
+    //   console.log("Scores retrieved!");
+    //   for (var i = 0; i < scores.length; i++) {
+    //     console.log(i + ": " + scores[i].name + " " + scores[i].score + " " + scores[i].date);
+    //   }
+    // });
   });
 
   console.log("Listening on 9000");
@@ -244,8 +250,6 @@ io.sockets.on('connection', function(socket) {
       Socket_List[i].emit('addToChat', '<strong>' + playerName + ':</strong> ' + data);
     }
   });
-
-
 });
 
 setInterval(function(){
@@ -258,6 +262,4 @@ setInterval(function(){
     var socket = Socket_List[i];
     socket.emit('newPositions', pack);
   }
-
-
 }, 1000/25)
