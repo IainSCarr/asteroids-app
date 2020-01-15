@@ -1,7 +1,7 @@
-var gameModule = angular.module("game", ["ngRoute"]);
+var gameModule = angular.module("asteroidsapp", ["ngRoute"]);
 
-gameModule.component("game", {
-    templateUrl: "components/game/game.template.html",
+gameModule.component("scores", {
+    templateUrl: "components/scores/scores.template.html",
     controller: function GameController($scope, $http) {
         // Add functions to the scope here.
         $scope.initGame = function() {
