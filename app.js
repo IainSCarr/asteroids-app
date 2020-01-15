@@ -1,9 +1,10 @@
 var express = require("express");
+var mongoose = require("mongoose");
 var app = express();
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
 
-//app.use(express.static("client"));
+var uri = "mongodb+srv://admin:soft355@ic-cluster-snuim.mongodb.net/Asteroids?retryWrites=true&w=majority";
 
 app.use('/client', express.static(__dirname + '/client'));
 
@@ -14,6 +15,10 @@ app.get('/', function (request, response) {
 
 
 server.listen(9000, function() {
+  mongoose.connect(uri, {useNewUrlParser: true, useUnifiedTopology: true}).then((test) => {
+    console.log("Connected to DB");
+  });
+
   console.log("Listening on 9000");
 });
 
