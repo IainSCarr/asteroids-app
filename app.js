@@ -254,9 +254,13 @@ io.sockets.on('connection', function(socket) {
   Socket_List[socket.id] = socket;
 
   socket.on('disconnect', function(data) {
-    for (var i in Socket_List) {
-      Socket_List[i].emit('addToChat', Player.list[socket.id].name + ' disconnected');
+    var p = Player.list[socket.id];
+    if (p) { // if player exists and not a glitch
+      for (var i in Socket_List) {
+        Socket_List[i].emit('addToChat', Player.list[socket.id].name + ' disconnected');
+      }
     }
+
     delete Socket_List[socket.id];
     Player.onDisconnect(socket);
   });
