@@ -1,7 +1,7 @@
 var schemas = require("./schemas");
 
 async function getHighScores() {
-    return await schemas.Score.find({}).sort({score:-1}).limit(3);
+    return await schemas.Score.find({}).sort({score:-1}).limit(10);
 }
 
 module.exports.getHighScores = getHighScores;
