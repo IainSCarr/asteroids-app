@@ -153,21 +153,22 @@ class Player extends Entity {
     }
   }
 
-  takeDamage() {
+  takeDamage(killer) {
     this.health -= 1;
     if (this.health <= 0) {
       this.lives -= 1;
 
       if (this.lives <= 0) {
-        this.lose();
+        this.lose(killer);
       }
       else {
-        this.die();
+        this.die(killer);
       }
     }
   }
 
-  die(){
+  die(killer){
+    io.sockets.emit('addToChat', '<strong>' + killer + '</strong>' + ' has killed <strong>' + this.name + '</strong>');
     this.velocity = [0, 0];
     this.direction = 0;
     this.x = Math.random() * 700;
@@ -175,12 +176,10 @@ class Player extends Entity {
     this.health = this.maxHealth;
   }
 
-  lose() {
-    var score = new schemas.Score({
-      name: this.name,
-      score: this.score
-    });
-    score.save();
+  lose(killer) {
+    this.saveScore();
+    io.sockets.emit('addToChat', '<strong>' + killer + '</strong>' + ' has killed <strong>' + this.name + '</strong>');
+    io.sockets.emit('addToChat', '<strong>' + this.name + '</strong> has ran out of lives. Score saved. Restarting in 5 seconds.');
     this.respawn();
   }
 
@@ -194,6 +193,16 @@ class Player extends Entity {
       this.health = this.maxHealth;
       this.lives = 3;
     }).bind(this), 5000);
+  }
+
+  saveScore() {
+    if (this.score > 0) {
+      var score = new schemas.Score({
+        name: this.name,
+        score: this.score
+      });
+      score.save();
+    }
   }
 }
 
@@ -216,7 +225,11 @@ Player.onConnect = function(socket) {
 }
 
 Player.onDisconnect = function(socket) {
-  delete Player.list[socket.id];
+  var p = Player.list[socket.id];
+  if (p) { // if player exists and not a glitch
+    Player.list[socket.id].saveScore();
+    delete Player.list[socket.id];
+  }
 }
 
 Player.update = function() {
@@ -258,8 +271,8 @@ class Bullet extends Entity {
       var player = Player.list[i];
       if (player.lives > 0 && player.health > 0) { // if player is alive
         if (this.getDistance(player) < 12 && this.parent !== player.id) { // if collision has occured
-          player.takeDamage();
           var parent = Player.list[this.parent];
+          player.takeDamage(parent.name);
           if (parent) {
             parent.score += 1;
           }
@@ -303,9 +316,8 @@ io.sockets.on('connection', function(socket) {
         Socket_List[i].emit('addToChat', Player.list[socket.id].name + ' disconnected');
       }
     }
-
-    delete Socket_List[socket.id];
     Player.onDisconnect(socket);
+    delete Socket_List[socket.id];
   });
 
   socket.on('sendMessage', function(data) {
@@ -320,15 +332,6 @@ io.sockets.on('connection', function(socket) {
     for (var i in Socket_List) {
       Socket_List[i].emit('addToChat', data + ' connected');
     }
-  });
-
-  socket.on('death', function(data) {
-    //console.log(Player.list[socket.id].name + " has died");
-    for (var i in Socket_List) {
-      Socket_List[i].emit(data.name + " has died");
-    }
-
-
   });
 });
 

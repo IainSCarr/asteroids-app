@@ -6,8 +6,30 @@ var engineon = new Image();
 engineon.src = '/client/resources/ship-engineon.png';
 var bullet = new Image();
 bullet.src = '/client/resources/bullet.png';
-var asteroidLarge = new Image();
-asteroidLarge.src = '/client/resources/asteroid-large.png';
+
+document.onkeydown = function(event) {
+  if (event.keyCode === 39) // right arrow
+    socket.emit('keyPress', {inputId:'right', state:true});
+  else if(event.keyCode === 37) // left arrow
+    socket.emit('keyPress', {inputId:'left', state:true});
+  else if(event.keyCode === 38) // up arrow
+    socket.emit('keyPress', {inputId:'up', state:true});
+  else if(event.keyCode === 32) // spacebar
+    if (document.body == document.activeElement) // if focus is on game
+      socket.emit('keyPress', {inputId:'shoot', state:true});
+}
+
+document.onkeyup = function(event) {
+  if (event.keyCode === 39) // right arrow
+    socket.emit('keyPress', {inputId:'right', state:false});
+  else if(event.keyCode === 37) // left arrow
+    socket.emit('keyPress', {inputId:'left', state:false});
+  else if(event.keyCode === 38) // up arrow
+    socket.emit('keyPress', {inputId:'up', state:false});
+  else if(event.keyCode === 32) // spacebar
+    if (document.body == document.activeElement) // if focus is on game
+      socket.emit('keyPress', {inputId:'shoot', state:false});
+}
 
 gameModule.component("game", {
     templateUrl: "components/game/game.template.html",
@@ -18,7 +40,7 @@ gameModule.component("game", {
           socket.on('newPositions',function(data){
             ctx.clearRect(0,0,700,700);
             for (var i = 0; i < data.player.length; i++) {
-              if (data.player[i].lives > 0) {
+              if (data.player[i].lives > 0) { // if player is alive
                 ctx.save();
                 ctx.beginPath();
                 ctx.translate(data.player[i].x, data.player[i].y);
@@ -30,10 +52,8 @@ gameModule.component("game", {
                 ctx.closePath();
                 ctx.restore();
               }
-              else {
-                socket.emit('death', {name:data.player[i].name});
-              }
             }
+
 
             for (var i = 0; i < data.bullet.length; i++) {
               ctx.save();
@@ -42,30 +62,6 @@ gameModule.component("game", {
               ctx.drawImage(bullet, -0.5, -0.5, 1, 1);
               ctx.closePath();
               ctx.restore();
-            }
-
-            document.onkeydown = function(event) {
-              if (event.keyCode === 39) // right arrow
-                socket.emit('keyPress', {inputId:'right', state:true});
-              else if(event.keyCode === 37) // left arrow
-                socket.emit('keyPress', {inputId:'left', state:true});
-              else if(event.keyCode === 38) // up arrow
-                socket.emit('keyPress', {inputId:'up', state:true});
-              else if(event.keyCode === 32) // spacebar
-                if (document.body == document.activeElement) // if focus is on game
-                  socket.emit('keyPress', {inputId:'shoot', state:true});
-            }
-
-            document.onkeyup = function(event) {
-              if (event.keyCode === 39) // right arrow
-                socket.emit('keyPress', {inputId:'right', state:false});
-              else if(event.keyCode === 37) // left arrow
-                socket.emit('keyPress', {inputId:'left', state:false});
-              else if(event.keyCode === 38) // up arrow
-                socket.emit('keyPress', {inputId:'up', state:false});
-              else if(event.keyCode === 32) // spacebar
-                if (document.body == document.activeElement) // if focus is on game
-                  socket.emit('keyPress', {inputId:'shoot', state:false});
             }
           });
         }
