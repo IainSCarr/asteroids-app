@@ -1,16 +1,4 @@
-var arrow_keys_handler = function(e) {
-  switch(e.keyCode){
-      case 37: case 39: case 38:  case 40: // Arrow keys
-      case 32:
-        if (e.target == document.body) e.preventDefault(); break; // Space
-      default: break; // do not block other keys
-  }
-};
-window.addEventListener("keydown", arrow_keys_handler, false);
-
 var ctx;
-
-var socket = io();
 
 var engineoff = new Image();
 engineoff.src = '/client/resources/ship-engineoff.png';
@@ -20,8 +8,6 @@ var bullet = new Image();
 bullet.src = '/client/resources/bullet.png';
 var asteroidLarge = new Image();
 asteroidLarge.src = '/client/resources/asteroid-large.png';
-
-
 
 var gameModule = angular.module("asteroidsapp", ["ngRoute"]);
 
@@ -83,5 +69,3 @@ gameModule.component("game", {
         }
       }
 });
-
-//ctx = document.getElementById('ctx').getContext("2d");
