@@ -12,7 +12,6 @@ asteroidLarge.src = '/client/resources/asteroid-large.png';
 gameModule.component("game", {
     templateUrl: "components/game/game.template.html",
     controller: function GameController($scope, $http) {
-        // Add functions to the scope here.
         $scope.initGame = function() {
           ctx = $('#ctx')[0].getContext('2d');
 

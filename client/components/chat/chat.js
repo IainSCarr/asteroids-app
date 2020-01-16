@@ -1,7 +1,6 @@
 gameModule.component("chat", {
     templateUrl: "components/chat/chat.template.html",
     controller: function GameController($scope, $http) {
-        // Add functions to the scope here.
         $scope.initGame = function() {
           $('#chat-form').submit( function(e) {
             e.preventDefault();
