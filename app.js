@@ -253,14 +253,10 @@ io.sockets.on('connection', function(socket) {
   socket.id = Math.random();
   Socket_List[socket.id] = socket;
 
-  Player.onConnect(socket);
-
   socket.on('disconnect', function(data) {
-    var playerName = ("" + socket.id);
     for (var i in Socket_List) {
-      Socket_List[i].emit('addToChat', playerName + ' disconnected');
+      Socket_List[i].emit('addToChat', Player.list[socket.id].name + ' disconnected');
     }
-
     delete Socket_List[socket.id];
     Player.onDisconnect(socket);
   });
@@ -272,6 +268,7 @@ io.sockets.on('connection', function(socket) {
   });
 
   socket.on('joinGame', function(data) {
+    Player.onConnect(socket);
     Player.list[socket.id].name = data;
     for (var i in Socket_List) {
       Socket_List[i].emit('addToChat', data + ' connected');
