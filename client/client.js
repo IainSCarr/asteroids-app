@@ -10,3 +10,15 @@ var arrow_keys_handler = function(e) {
   }
 };
 window.addEventListener("keydown", arrow_keys_handler, false);
+
+function createSoloGame(name) {
+  console.log("Creating solo game as " + name);
+}
+
+function createMultiplayerGame(name) {
+  console.log("Creating solo game as " + name);
+}
+
+function joinMultiplayerGame(name, code) {
+  console.log("Joining multiplayer game as " + name + " at " + code);
+}
