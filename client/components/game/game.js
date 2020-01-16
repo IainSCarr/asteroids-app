@@ -9,8 +9,6 @@ bullet.src = '/client/resources/bullet.png';
 var asteroidLarge = new Image();
 asteroidLarge.src = '/client/resources/asteroid-large.png';
 
-var gameModule = angular.module("asteroidsapp", ["ngRoute"]);
-
 gameModule.component("game", {
     templateUrl: "components/game/game.template.html",
     controller: function GameController($scope, $http) {

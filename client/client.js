@@ -1,4 +1,5 @@
 var socket = io();
+var gameModule = angular.module("asteroidsapp", ["ngRoute"]);
 
 var arrow_keys_handler = function(e) {
   switch(e.keyCode){

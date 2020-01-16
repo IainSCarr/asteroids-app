@@ -1,5 +1,3 @@
-var gameModule = angular.module("asteroidsapp", ["ngRoute"]);
-
 gameModule.component("scores", {
     templateUrl: "components/scores/scores.template.html",
     controller: function GameController($scope, $http) {
