@@ -118,6 +118,10 @@ class Player extends Entity {
     this.direction = 0;
     this.turnSpeed = 6;
     this.acceleration = 0.4;
+    this.health = 5;
+    this.maxHealth = 5;
+    this.lives = 3;
+    this.score = 0;
     Player.list[this.id] = this;
   }
 
@@ -194,6 +198,8 @@ Player.update = function() {
       y:player.y,
       angle:player.direction,
       engine:player.pressingUp,
+      score:player.score,
+      lives:player.lives
     });
   }
   return pack;
@@ -220,7 +226,22 @@ class Bullet extends Entity {
     for (var i in Player.list) {
       var player = Player.list[i];
       if (this.getDistance(player) < 12 && this.parent !== player.id) {
-        // handle collision
+        player.health -= 1;
+        var parent = Player.list[this.parent];
+        if (parent) {
+          parent.score += 1;
+        }
+        if (player.health <= 0) {
+          player.lives -= 1;
+          if (player.lives <= 0) {
+            console.log(player.name + "died, saving score now.");
+            player.score = 0;
+            player.lives = 3;
+          }
+          player.health = player.maxHealth;
+          player.x = Math.random() * 700;
+          player.y = Math.random() * 700;
+        }
         this.toRemove = true;
       }
     }
