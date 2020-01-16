@@ -50,20 +50,6 @@ app.get('/highscores', function(request, response) {
 server.listen(9000, function() {
   mongoose.connect(uri, {useNewUrlParser: true, useUnifiedTopology: true}).then((test) => {
     console.log("Connected to DB");
-
-    // var score = new schemas.Score({
-    //   name: "700 Test",
-    //   score: 700
-    // });
-    //
-    // score.save();
-    //
-    // db.getHighScores().then(function(scores) {
-    //   console.log("Scores retrieved!");
-    //   for (var i = 0; i < scores.length; i++) {
-    //     console.log(i + ": " + scores[i].name + " " + scores[i].score + " " + scores[i].date);
-    //   }
-    // });
   });
 
   console.log("Listening on 9000");
@@ -73,8 +59,8 @@ var Socket_List = {};
 
 class Entity {
   constructor() {
-    this.x = 50;
-    this.y = 50;
+    this.x = Math.random() * 700;
+    this.y = Math.random() * 700;
     this.velocity = [0, 0];
     this.id = "";
   }
@@ -158,11 +144,56 @@ class Player extends Entity {
   }
 
   update() {
-    this.updateDirection();
-    this.updateVelocity();
-    super.update();
-    if (this.isShooting && this.canShoot)
-      this.shootBullet();
+    if (this.lives != 0) {
+      this.updateDirection();
+      this.updateVelocity();
+      super.update();
+      if (this.isShooting && this.canShoot)
+        this.shootBullet();
+    }
+  }
+
+  takeDamage() {
+    this.health -= 1;
+    if (this.health <= 0) {
+      this.lives -= 1;
+
+      if (this.lives <= 0) {
+        this.lose();
+      }
+      else {
+        this.die();
+      }
+    }
+  }
+
+  die(){
+    this.velocity = [0, 0];
+    this.direction = 0;
+    this.x = Math.random() * 700;
+    this.y = Math.random() * 700;
+    this.health = this.maxHealth;
+  }
+
+  lose() {
+    var score = new schemas.Score({
+      name: this.name,
+      score: this.score
+    });
+    score.save();
+    this.respawn();
+  }
+
+  respawn() {
+    setTimeout((function() {
+      this.score = 0;
+      this.velocity = [0, 0];
+      this.direction = 0;
+      this.x = Math.random() * 700;
+      this.y = Math.random() * 700;
+      this.health = this.maxHealth;
+      this.lives = 3;
+    }).bind(this), 5000);
   }
 }
 
@@ -223,26 +254,17 @@ class Bullet extends Entity {
     }
     super.update();
 
-    for (var i in Player.list) {
+    for (var i in Player.list) { // loop through players
       var player = Player.list[i];
-      if (this.getDistance(player) < 12 && this.parent !== player.id) {
-        player.health -= 1;
-        var parent = Player.list[this.parent];
-        if (parent) {
-          parent.score += 1;
-        }
-        if (player.health <= 0) {
-          player.lives -= 1;
-          if (player.lives <= 0) {
-            console.log(player.name + "died, saving score now.");
-            player.score = 0;
-            player.lives = 3;
+      if (player.lives > 0 && player.health > 0) { // if player is alive
+        if (this.getDistance(player) < 12 && this.parent !== player.id) { // if collision has occured
+          player.takeDamage();
+          var parent = Player.list[this.parent];
+          if (parent) {
+            parent.score += 1;
           }
-          player.health = player.maxHealth;
-          player.x = Math.random() * 700;
-          player.y = Math.random() * 700;
+          this.toRemove = true;
         }
-        this.toRemove = true;
       }
     }
   }
@@ -298,7 +320,16 @@ io.sockets.on('connection', function(socket) {
     for (var i in Socket_List) {
       Socket_List[i].emit('addToChat', data + ' connected');
     }
-  })
+  });
+
+  socket.on('death', function(data) {
+    //console.log(Player.list[socket.id].name + " has died");
+    for (var i in Socket_List) {
+      Socket_List[i].emit(data.name + " has died");
+    }
+
+
+  });
 });
 
 setInterval(function(){

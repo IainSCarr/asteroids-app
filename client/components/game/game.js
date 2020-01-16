@@ -18,16 +18,21 @@ gameModule.component("game", {
           socket.on('newPositions',function(data){
             ctx.clearRect(0,0,700,700);
             for (var i = 0; i < data.player.length; i++) {
-              ctx.save();
-              ctx.beginPath();
-              ctx.translate(data.player[i].x, data.player[i].y);
-              ctx.rotate(data.player[i].angle * Math.PI/180);
-              if (data.player[i].engine)
-                ctx.drawImage(engineon, -10, -10, 20 ,20);
-              else
-                ctx.drawImage(engineoff, -10, -10, 20 ,20);
-              ctx.closePath();
-              ctx.restore();
+              if (data.player[i].lives > 0) {
+                ctx.save();
+                ctx.beginPath();
+                ctx.translate(data.player[i].x, data.player[i].y);
+                ctx.rotate(data.player[i].angle * Math.PI/180);
+                if (data.player[i].engine)
+                  ctx.drawImage(engineon, -10, -10, 20 ,20);
+                else
+                  ctx.drawImage(engineoff, -10, -10, 20 ,20);
+                ctx.closePath();
+                ctx.restore();
+              }
+              else {
+                socket.emit('death', {name:data.player[i].name});
+              }
             }
 
             for (var i = 0; i < data.bullet.length; i++) {
