@@ -23,3 +23,15 @@ body {
   color: white;
   background-color: black;
 }
+
+#chatContainer {
+  visibility: hidden;
+}
+
+#loginContainer {
+  visibility: visible;
+}
+
+#gameContainer {
+  visibility: hidden;
+}

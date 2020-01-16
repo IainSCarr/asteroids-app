@@ -8,6 +8,7 @@ var io = require('socket.io')(server);
 
 var uri = "mongodb+srv://admin:soft355@ic-cluster-snuim.mongodb.net/Asteroids?retryWrites=true&w=majority";
 
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static("client"));
 app.use('/client', express.static(__dirname + '/client'));
 
@@ -21,6 +22,30 @@ app.get('/highscores', function(request, response) {
     response.send(scores);
   });
 });
+
+
+// app.get('/game/:code', function(request, response) {
+//   response.end();
+//
+// });
+//
+// app.get('/sologame', function(request, response) {
+//   console.log("Creating solo game as ");
+//   console.log(request);
+//   response.end();
+// });
+//
+// app.post('/creategame', function(request, response) {
+//     console.log("Creating multiplayer game as " + request.body.name);
+//     var code = Math.floor(Math.random() * (99999 - 10000)) + 10000;
+//     console.log("Redirecting to game with code " + code);
+//     response.redirect("/game/" + code);
+// });
+//
+// app.post('/joingame', function(request, response) {
+//   console.log("Joining multiplayer game as " + request.body.username);
+//   response.end();
+// });
 
 server.listen(9000, function() {
   mongoose.connect(uri, {useNewUrlParser: true, useUnifiedTopology: true}).then((test) => {
@@ -83,6 +108,7 @@ class Player extends Entity {
   constructor(id) {
     super();
     this.id = id;
+    this.name = "";
     this.pressingRight = false;
     this.pressingLeft = false;
     this.pressingUp = false;
@@ -229,11 +255,6 @@ io.sockets.on('connection', function(socket) {
 
   Player.onConnect(socket);
 
-  var playerName = ("" + socket.id);
-  for (var i in Socket_List) {
-    Socket_List[i].emit('addToChat', playerName + ' connected');
-  }
-
   socket.on('disconnect', function(data) {
     var playerName = ("" + socket.id);
     for (var i in Socket_List) {
@@ -245,11 +266,17 @@ io.sockets.on('connection', function(socket) {
   });
 
   socket.on('sendMessage', function(data) {
-    var playerName = ("" + socket.id);
     for (var i in Socket_List) {
-      Socket_List[i].emit('addToChat', '<strong>' + playerName + ':</strong> ' + data);
+      Socket_List[i].emit('addToChat', '<strong>' + Player.list[socket.id].name + ':</strong> ' + data);
     }
   });
+
+  socket.on('joinGame', function(data) {
+    Player.list[socket.id].name = data;
+    for (var i in Socket_List) {
+      Socket_List[i].emit('addToChat', data + ' connected');
+    }
+  })
 });
 
 setInterval(function(){
