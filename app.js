@@ -175,6 +175,7 @@ class Player extends Entity {
       });
       score.save();
     }
+    io.sockets.emit('updateHighscores', {});
   }
 }
 
