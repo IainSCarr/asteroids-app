@@ -169,7 +169,7 @@ class Player extends Entity {
 
   die(killer){
     io.sockets.emit('addToChat', '<strong>' + killer + '</strong>' + ' has killed <strong>' + this.name + '</strong>');
-    io.sockets.emit('newLives', Player.update());
+    io.sockets.emit('updateInformation', {player:Player.update()});
     this.reset();
   }
 
@@ -177,7 +177,7 @@ class Player extends Entity {
     this.saveScore();
     io.sockets.emit('addToChat', '<strong>' + killer + '</strong>' + ' has killed <strong>' + this.name + '</strong>');
     io.sockets.emit('addToChat', '<strong>' + this.name + '</strong> has ran out of lives. Score saved. Restarting in 5 seconds.');
-    io.sockets.emit('newLives', Player.update());
+    io.sockets.emit('updateInformation', {player:Player.update()});
     this.respawn();
   }
 
@@ -244,6 +244,7 @@ Player.update = function() {
       y:player.y,
       angle:player.direction,
       engine:player.pressingUp,
+      name:player.name,
       score:player.score,
       lives:player.lives
     });
@@ -277,7 +278,7 @@ class Bullet extends Entity {
           player.takeDamage(parent.name);
           if (parent) {
             parent.score += 1;
-            io.sockets.emit('newScore', Player.update());
+            io.sockets.emit('updateInformation', {player:Player.update()});
           }
           this.toRemove = true;
         }
@@ -334,6 +335,7 @@ io.sockets.on('connection', function(socket) {
     Player.list[socket.id].name = data;
     for (var i in Socket_List) {
       Socket_List[i].emit('addToChat', data + ' connected');
+      Socket_List[i].emit('updateInformation', {player:Player.update()});
     }
   });
 });

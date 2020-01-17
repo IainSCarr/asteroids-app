@@ -64,6 +64,23 @@ gameModule.component("game", {
               ctx.restore();
             }
           });
+
+          socket.on('updateInformation', function(data) {
+            console.log("New lives information");
+            let playerInfo = $('#playerInfo');
+            playerInfo.empty();
+            for (var i = 0; i < data.player.length; i++) {
+              let info = "<div style='display:inline-block;'><div style='display:inline-block;'>" + data.player[i].name + "</div><div style='display:inline-block;margin-left:20px;margin-right:40px;'>";
+              for (var j = 0; j < data.player[i].lives; j++) {
+                info += "<img src='/client/resources/ship-engineoff.png' style='width:10px;height:10px;'>";
+              }
+              for (var j = data.player[i].lives; j <= 3; j++) {
+                info += "<img src='/client/resources/ship-engineoff.png' style='width:10px;height:10px;visibility:hidden;'>";
+              }
+              info += "</div><div>" + data.player[i].score + "</div></div>";
+              playerInfo.append(info);
+            }
+          });
         }
       }
 });
