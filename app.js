@@ -233,7 +233,7 @@ class Bullet extends Entity {
   }
 
   update() {
-    if (this.timer++ > 25) {
+    if (this.timer++ > 27) {
       this.toRemove = true;
     }
     super.update();

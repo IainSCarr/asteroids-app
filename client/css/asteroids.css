@@ -15,6 +15,10 @@ h1 {
   overflow-x: hidden;
 }
 
+#chat-text::-webkit-scrollbar{
+  display: none;
+}
+
 #chat-input {
   width: auto;
 }
@@ -25,7 +29,7 @@ body {
 }
 
 #chatContainer {
-  visibility: hidden;
+  visibility: visible;
 }
 
 #loginContainer {
@@ -34,4 +38,13 @@ body {
 
 #gameContainer {
   visibility: hidden;
+}
+
+.chat-message {
+  background-color:rgba(255, 255, 255, 0.05);
+  padding: 10px;
+}
+
+.dark {
+  background-color:rgba(255, 255, 255, 0.08);
 }
