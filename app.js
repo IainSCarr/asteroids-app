@@ -50,20 +50,6 @@ app.get('/highscores', function(request, response) {
 server.listen(9000, function() {
   mongoose.connect(uri, {useNewUrlParser: true, useUnifiedTopology: true}).then((test) => {
     console.log("Connected to DB");
-
-    // var score = new schemas.Score({
-    //   name: "700 Test",
-    //   score: 700
-    // });
-    //
-    // score.save();
-    //
-    // db.getHighScores().then(function(scores) {
-    //   console.log("Scores retrieved!");
-    //   for (var i = 0; i < scores.length; i++) {
-    //     console.log(i + ": " + scores[i].name + " " + scores[i].score + " " + scores[i].date);
-    //   }
-    // });
   });
 
   console.log("Listening on 9000");
@@ -73,8 +59,8 @@ var Socket_List = {};
 
 class Entity {
   constructor() {
-    this.x = 50;
-    this.y = 50;
+    this.x = Math.random() * 700;
+    this.y = Math.random() * 700;
     this.velocity = [0, 0];
     this.id = "";
   }
@@ -118,6 +104,10 @@ class Player extends Entity {
     this.direction = 0;
     this.turnSpeed = 6;
     this.acceleration = 0.4;
+    this.health = 5;
+    this.maxHealth = 5;
+    this.lives = 3;
+    this.score = 0;
     Player.list[this.id] = this;
   }
 
@@ -154,11 +144,67 @@ class Player extends Entity {
   }
 
   update() {
-    this.updateDirection();
-    this.updateVelocity();
-    super.update();
-    if (this.isShooting && this.canShoot)
-      this.shootBullet();
+    if (this.lives != 0) {
+      this.updateDirection();
+      this.updateVelocity();
+      super.update();
+      if (this.isShooting && this.canShoot)
+        this.shootBullet();
+    }
+  }
+
+  takeDamage(killer) {
+    this.health -= 1;
+    if (this.health <= 0) {
+      this.lives -= 1;
+
+      if (this.lives <= 0) {
+        this.lose(killer);
+      }
+      else {
+        this.die(killer);
+      }
+    }
+  }
+
+  die(killer){
+    io.sockets.emit('addToChat', '<strong>' + killer + '</strong>' + ' has killed <strong>' + this.name + '</strong>');
+    io.sockets.emit('updateInformation', {player:Player.getInfo()});
+    this.reset();
+  }
+
+  lose(killer) {
+    this.saveScore();
+    io.sockets.emit('addToChat', '<strong>' + killer + '</strong>' + ' has killed <strong>' + this.name + '</strong>');
+    io.sockets.emit('addToChat', '<strong>' + this.name + '</strong> has ran out of lives. Score saved. Restarting in 5 seconds.');
+    io.sockets.emit('updateInformation', {player:Player.getInfo()});
+    this.respawn();
+  }
+
+  reset() {
+    this.velocity = [0, 0];
+    this.direction = 0;
+    this.x = Math.random() * 700;
+    this.y = Math.random() * 700;
+    this.health = this.maxHealth;
+  }
+
+  respawn() {
+    setTimeout((function() {
+      this.reset();
+      this.score = 0;
+      this.lives = 3;
+    }).bind(this), 5000);
+  }
+
+  saveScore() {
+    if (this.score > 0) {
+      var score = new schemas.Score({
+        name: this.name,
+        score: this.score
+      });
+      score.save();
+    }
   }
 }
 
@@ -181,7 +227,11 @@ Player.onConnect = function(socket) {
 }
 
 Player.onDisconnect = function(socket) {
-  delete Player.list[socket.id];
+  var p = Player.list[socket.id];
+  if (p) { // if player exists and not a glitch
+    Player.list[socket.id].saveScore();
+    delete Player.list[socket.id];
+  }
 }
 
 Player.update = function() {
@@ -194,6 +244,20 @@ Player.update = function() {
       y:player.y,
       angle:player.direction,
       engine:player.pressingUp,
+      lives:player.lives
+    });
+  }
+  return pack;
+}
+
+Player.getInfo = function() {
+  var pack = [];
+  for(var i in Player.list) {
+    var player = Player.list[i];
+    pack.push({
+      name:player.name,
+      score:player.score,
+      lives:player.lives
     });
   }
   return pack;
@@ -217,11 +281,18 @@ class Bullet extends Entity {
     }
     super.update();
 
-    for (var i in Player.list) {
+    for (var i in Player.list) { // loop through players
       var player = Player.list[i];
-      if (this.getDistance(player) < 12 && this.parent !== player.id) {
-        // handle collision
-        this.toRemove = true;
+      if (player.lives > 0 && player.health > 0) { // if player is alive
+        if (this.getDistance(player) < 12 && this.parent !== player.id) { // if collision has occured
+          var parent = Player.list[this.parent];
+          player.takeDamage(parent.name);
+          if (parent) {
+            parent.score += 1;
+            io.sockets.emit('updateInformation', {player:Player.getInfo()});
+          }
+          this.toRemove = true;
+        }
       }
     }
   }
@@ -254,11 +325,14 @@ io.sockets.on('connection', function(socket) {
   Socket_List[socket.id] = socket;
 
   socket.on('disconnect', function(data) {
-    for (var i in Socket_List) {
-      Socket_List[i].emit('addToChat', Player.list[socket.id].name + ' disconnected');
+    var p = Player.list[socket.id];
+    if (p) { // if player exists and not a glitch
+      for (var i in Socket_List) {
+        Socket_List[i].emit('addToChat', Player.list[socket.id].name + ' disconnected');
+      }
     }
-    delete Socket_List[socket.id];
     Player.onDisconnect(socket);
+    delete Socket_List[socket.id];
   });
 
   socket.on('sendMessage', function(data) {
@@ -272,8 +346,9 @@ io.sockets.on('connection', function(socket) {
     Player.list[socket.id].name = data;
     for (var i in Socket_List) {
       Socket_List[i].emit('addToChat', data + ' connected');
+      Socket_List[i].emit('updateInformation', {player:Player.getInfo()});
     }
-  })
+  });
 });
 
 setInterval(function(){
