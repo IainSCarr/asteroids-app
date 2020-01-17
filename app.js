@@ -169,6 +169,7 @@ class Player extends Entity {
 
   die(killer){
     io.sockets.emit('addToChat', '<strong>' + killer + '</strong>' + ' has killed <strong>' + this.name + '</strong>');
+    io.sockets.emit('newLives', Player.update());
     this.reset();
   }
 
@@ -176,6 +177,7 @@ class Player extends Entity {
     this.saveScore();
     io.sockets.emit('addToChat', '<strong>' + killer + '</strong>' + ' has killed <strong>' + this.name + '</strong>');
     io.sockets.emit('addToChat', '<strong>' + this.name + '</strong> has ran out of lives. Score saved. Restarting in 5 seconds.');
+    io.sockets.emit('newLives', Player.update());
     this.respawn();
   }
 
@@ -275,6 +277,7 @@ class Bullet extends Entity {
           player.takeDamage(parent.name);
           if (parent) {
             parent.score += 1;
+            io.sockets.emit('newScore', Player.update());
           }
           this.toRemove = true;
         }
