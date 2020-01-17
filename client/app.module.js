@@ -2,5 +2,6 @@ angular.module("asteroidsapp", [
   "ngRoute",
   "scores",
   "game",
-  "chat"
+  "chat",
+  "login"
 ]);
