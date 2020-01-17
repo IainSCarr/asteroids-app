@@ -147,7 +147,6 @@ class Player extends Entity {
     this.saveScore();
     io.sockets.emit('addToChat', '<strong>' + killer + '</strong>' + ' has killed <strong>' + this.name + '</strong>');
     io.sockets.emit('addToChat', '<strong>' + this.name + '</strong> has ran out of lives. Score saved. Restarting in 5 seconds.');
-    io.sockets.emit('updateInformation', {player:Player.getInfo()});
     this.respawn();
   }
 
@@ -164,6 +163,7 @@ class Player extends Entity {
       this.reset();
       this.score = 0;
       this.lives = 3;
+      io.sockets.emit('updateInformation', {player:Player.getInfo()});
     }).bind(this), 5000);
   }
 
@@ -238,7 +238,7 @@ class Bullet extends Entity {
     super();
     this.parent = parent;
     this.id = Math.random();
-    this.speed = 12;
+    this.speed = 20;
     this.velocity = [Math.sin(angle * Math.PI / 180) * this.speed, Math.cos(angle * Math.PI / 180) * -this.speed];
     this.timer = 0;
     this.toRemove = false;
@@ -246,7 +246,7 @@ class Bullet extends Entity {
   }
 
   update() {
-    if (this.timer++ > 50) {
+    if (this.timer++ > 25) {
       this.toRemove = true;
     }
     super.update();
