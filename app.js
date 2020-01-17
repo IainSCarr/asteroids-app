@@ -169,11 +169,7 @@ class Player extends Entity {
 
   die(killer){
     io.sockets.emit('addToChat', '<strong>' + killer + '</strong>' + ' has killed <strong>' + this.name + '</strong>');
-    this.velocity = [0, 0];
-    this.direction = 0;
-    this.x = Math.random() * 700;
-    this.y = Math.random() * 700;
-    this.health = this.maxHealth;
+    this.reset();
   }
 
   lose(killer) {
@@ -183,14 +179,18 @@ class Player extends Entity {
     this.respawn();
   }
 
+  reset() {
+    this.velocity = [0, 0];
+    this.direction = 0;
+    this.x = Math.random() * 700;
+    this.y = Math.random() * 700;
+    this.health = this.maxHealth;
+  }
+
   respawn() {
     setTimeout((function() {
+      this.reset();
       this.score = 0;
-      this.velocity = [0, 0];
-      this.direction = 0;
-      this.x = Math.random() * 700;
-      this.y = Math.random() * 700;
-      this.health = this.maxHealth;
       this.lives = 3;
     }).bind(this), 5000);
   }
