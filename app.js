@@ -24,30 +24,6 @@ app.get('/highscores', function(request, response) {
   });
 });
 
-
-// app.get('/game/:code', function(request, response) {
-//   response.end();
-//
-// });
-//
-// app.get('/sologame', function(request, response) {
-//   console.log("Creating solo game as ");
-//   console.log(request);
-//   response.end();
-// });
-//
-// app.post('/creategame', function(request, response) {
-//     console.log("Creating multiplayer game as " + request.body.name);
-//     var code = Math.floor(Math.random() * (99999 - 10000)) + 10000;
-//     console.log("Redirecting to game with code " + code);
-//     response.redirect("/game/" + code);
-// });
-//
-// app.post('/joingame', function(request, response) {
-//   console.log("Joining multiplayer game as " + request.body.username);
-//   response.end();
-// });
-
 server.listen(9000, function() {
   mongoose.connect(uri, {useNewUrlParser: true, useUnifiedTopology: true}).then((test) => {
     console.log("Connected to DB");
@@ -57,8 +33,6 @@ server.listen(9000, function() {
 });
 
 var Socket_List = {};
-
-
 
 class Player extends Entity {
   constructor(id) {
@@ -167,15 +141,25 @@ class Player extends Entity {
     }).bind(this), 5000);
   }
 
-  saveScore() {
-    if (this.score > 0) {
-      var score = new schemas.Score({
-        name: this.name,
-        score: this.score
-      });
-      score.save();
-    }
-    io.sockets.emit('updateHighscores', {});
+  async saveScore() {
+    db.getHighScores().then(function(scores) {
+      if (scores.length === 0) {
+        var score = new schemas.Score({
+          name: this.name,
+          score: this.score
+        });
+        score.save();
+        io.sockets.emit('updateHighscores', {});
+      }
+      else if (scores[scores.length - 1].score < this.score) {
+        var score = new schemas.Score({
+          name: this.name,
+          score: this.score
+        });
+        score.save();
+        io.sockets.emit('updateHighscores', {});
+      }
+    }.bind(this));
   }
 }
 
@@ -200,8 +184,10 @@ Player.onConnect = function(socket) {
 Player.onDisconnect = function(socket) {
   var p = Player.list[socket.id];
   if (p) { // if player exists and not a glitch
-    Player.list[socket.id].saveScore();
-    delete Player.list[socket.id];
+    Player.list[socket.id].saveScore().then(function() {
+      delete Player.list[socket.id];
+      io.sockets.emit('updateInformation', {player:Player.getInfo()});
+    });
   }
 }
 
