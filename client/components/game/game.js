@@ -36,7 +36,6 @@ gameModule.component("game", {
     controller: function GameController($scope, $http) {
         $scope.initGame = function() {
           ctx = $('#ctx')[0].getContext('2d');
-
           socket.on('newPositions',function(data){
             ctx.clearRect(0,0,700,700);
             for (var i = 0; i < data.player.length; i++) {
@@ -66,7 +65,6 @@ gameModule.component("game", {
           });
 
           socket.on('updateInformation', function(data) {
-            console.log("New lives information");
             let playerInfo = $('#playerInfo');
             playerInfo.empty();
             for (var i = 0; i < data.player.length; i++) {
