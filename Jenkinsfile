@@ -7,6 +7,19 @@ pipeline {
       }
     }
 
+    stage('Test') {
+      steps {
+        echo 'Testing'
+        sh 'npm test'
+      }
+    }
+
+    stage('Deploy') {
+      steps {
+        echo 'Deploying'
+      }
+    }
+
   }
   environment {
     PATH = 'C:\\Program Files\\Git\\usr\\bin'
