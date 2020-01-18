@@ -4,6 +4,10 @@ pipeline {
     stage('Build') {
       steps {
         echo 'Building'
+        dir("C:\Users\Iain_\Documents\GitHub\asteroids-app") {
+          bat "pwd"
+        }
+        bat 'npm install'
       }
     }
 
