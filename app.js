@@ -157,11 +157,11 @@ class Player extends Entity {
         io.sockets.emit('updateHighscores', {});
       }
       else if (scores[scores.length - 1].score < this.score) {
-        var score = new schemas.Score({
+        var newScore = new schemas.Score({
           name: this.name,
           score: this.score
         });
-        score.save();
+        newScore.save();
         io.sockets.emit('updateHighscores', {});
       }
     }.bind(this));
@@ -286,7 +286,8 @@ io.sockets.on('connection', function(socket) {
   socket.id = Math.random();
   Socket_List[socket.id] = socket;
 
-  socket.on('disconnect', function(data) {
+  socket.on('disconnect', function() {
+    console.log('Socket disconnected');
     var p = Player.list[socket.id];
     if (p) { // if player exists and not a glitch
       for (var i in Socket_List) {
