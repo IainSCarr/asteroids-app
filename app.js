@@ -24,12 +24,17 @@ app.get('/highscores', function(request, response) {
   });
 });
 
-server.listen(9000, function() {
-  mongoose.connect(uri, {useNewUrlParser: true, useUnifiedTopology: true}).then((test) => {
-    console.log("Connected to DB");
-  });
+mongoose.connect(uri, {useNewUrlParser: true, useUnifiedTopology: true});
+const database = mongoose.connection;
+database.on("open", () => {
+  console.log("> MongoDB successfully connected");
+});
+database.on("error", (err) => {
+  console.log("> MongoDB event error: " + err);
+});
 
-  console.log("Listening on 9000");
+server.listen(9000, function() {
+  console.log("> Server running at: http://localhost:9000/");
 });
 
 var Socket_List = {};
