@@ -2,6 +2,7 @@ var express = require("express");
 var mongoose = require("mongoose");
 var db = require("./db");
 var schemas = require("./schemas");
+var Entity = require("./models/entity");
 var app = express();
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
@@ -23,30 +24,6 @@ app.get('/highscores', function(request, response) {
   });
 });
 
-
-// app.get('/game/:code', function(request, response) {
-//   response.end();
-//
-// });
-//
-// app.get('/sologame', function(request, response) {
-//   console.log("Creating solo game as ");
-//   console.log(request);
-//   response.end();
-// });
-//
-// app.post('/creategame', function(request, response) {
-//     console.log("Creating multiplayer game as " + request.body.name);
-//     var code = Math.floor(Math.random() * (99999 - 10000)) + 10000;
-//     console.log("Redirecting to game with code " + code);
-//     response.redirect("/game/" + code);
-// });
-//
-// app.post('/joingame', function(request, response) {
-//   console.log("Joining multiplayer game as " + request.body.username);
-//   response.end();
-// });
-
 server.listen(9000, function() {
   mongoose.connect(uri, {useNewUrlParser: true, useUnifiedTopology: true}).then((test) => {
     console.log("Connected to DB");
@@ -56,39 +33,6 @@ server.listen(9000, function() {
 });
 
 var Socket_List = {};
-
-class Entity {
-  constructor() {
-    this.x = Math.random() * 700;
-    this.y = Math.random() * 700;
-    this.velocity = [0, 0];
-    this.id = "";
-  }
-
-  update() {
-    this.updatePosition();
-  }
-
-  updatePosition() {
-    this.x += this.velocity[0];
-
-    if (this.x < 0)
-      this.x = 700;
-    else if (this.x > 700)
-      this.x = 0;
-
-    this.y += this.velocity[1];
-
-    if (this.y < 0)
-      this.y = 700;
-    else if (this.y > 700)
-      this.y = 0;
-  }
-
-  getDistance(entity) {
-    return Math.sqrt(Math.pow(this.x - entity.x, 2) + Math.pow(this.y - entity.y, 2));
-  }
-}
 
 class Player extends Entity {
   constructor(id) {
@@ -176,8 +120,7 @@ class Player extends Entity {
   lose(killer) {
     this.saveScore();
     io.sockets.emit('addToChat', '<strong>' + killer + '</strong>' + ' has killed <strong>' + this.name + '</strong>');
-    io.sockets.emit('addToChat', '<strong>' + this.name + '</strong> has ran out of lives. Score saved. Restarting in 5 seconds.');
-    io.sockets.emit('updateInformation', {player:Player.getInfo()});
+    io.sockets.emit('addToChat', '<strong>' + this.name + '</strong> has ran out of lives. Score saved. Restarting in 10 seconds.');
     this.respawn();
   }
 
@@ -194,17 +137,29 @@ class Player extends Entity {
       this.reset();
       this.score = 0;
       this.lives = 3;
-    }).bind(this), 5000);
+      io.sockets.emit('updateInformation', {player:Player.getInfo()});
+    }).bind(this), 10000);
   }
 
-  saveScore() {
-    if (this.score > 0) {
-      var score = new schemas.Score({
-        name: this.name,
-        score: this.score
-      });
-      score.save();
-    }
+  async saveScore() {
+    db.getHighScores().then(function(scores) {
+      if (scores.length === 0) {
+        var score = new schemas.Score({
+          name: this.name,
+          score: this.score
+        });
+        score.save();
+        io.sockets.emit('updateHighscores', {});
+      }
+      else if (scores[scores.length - 1].score < this.score) {
+        var score = new schemas.Score({
+          name: this.name,
+          score: this.score
+        });
+        score.save();
+        io.sockets.emit('updateHighscores', {});
+      }
+    }.bind(this));
   }
 }
 
@@ -229,8 +184,10 @@ Player.onConnect = function(socket) {
 Player.onDisconnect = function(socket) {
   var p = Player.list[socket.id];
   if (p) { // if player exists and not a glitch
-    Player.list[socket.id].saveScore();
-    delete Player.list[socket.id];
+    Player.list[socket.id].saveScore().then(function() {
+      delete Player.list[socket.id];
+      io.sockets.emit('updateInformation', {player:Player.getInfo()});
+    });
   }
 }
 
@@ -268,7 +225,7 @@ class Bullet extends Entity {
     super();
     this.parent = parent;
     this.id = Math.random();
-    this.speed = 12;
+    this.speed = 20;
     this.velocity = [Math.sin(angle * Math.PI / 180) * this.speed, Math.cos(angle * Math.PI / 180) * -this.speed];
     this.timer = 0;
     this.toRemove = false;
@@ -276,7 +233,7 @@ class Bullet extends Entity {
   }
 
   update() {
-    if (this.timer++ > 50) {
+    if (this.timer++ > 27) {
       this.toRemove = true;
     }
     super.update();
@@ -288,7 +245,7 @@ class Bullet extends Entity {
           var parent = Player.list[this.parent];
           player.takeDamage(parent.name);
           if (parent) {
-            parent.score += 1;
+            parent.score += 10;
             io.sockets.emit('updateInformation', {player:Player.getInfo()});
           }
           this.toRemove = true;

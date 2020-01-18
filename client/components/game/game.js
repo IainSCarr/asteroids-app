@@ -68,14 +68,14 @@ gameModule.component("game", {
             let playerInfo = $('#playerInfo');
             playerInfo.empty();
             for (var i = 0; i < data.player.length; i++) {
-              let info = "<div style='display:inline-block;'><div style='display:inline-block;'>" + data.player[i].name + "</div><div style='display:inline-block;margin-left:20px;margin-right:40px;'>";
+              let info = "<div style='display:inline-block;margin: 0 auto;'><div style='display:inline-block;text-align:left;'><strong>" + data.player[i].name + "</strong></div><div style='display:inline-block;margin-left:20px;margin-right:40px;'>";
               for (var j = 0; j < data.player[i].lives; j++) {
                 info += "<img src='/client/resources/ship-engineoff.png' style='width:10px;height:10px;'>";
               }
               for (var j = data.player[i].lives; j <= 3; j++) {
                 info += "<img src='/client/resources/ship-engineoff.png' style='width:10px;height:10px;visibility:hidden;'>";
               }
-              info += "</div><div>" + data.player[i].score + "</div></div>";
+              info += "</div><div style='text-align:left;'><strong>" + data.player[i].score + "</strong></div></div>";
               playerInfo.append(info);
             }
           });

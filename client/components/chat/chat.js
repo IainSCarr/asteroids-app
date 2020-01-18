@@ -1,3 +1,5 @@
+var isDarker = false;
+
 gameModule.component("chat", {
     templateUrl: "components/chat/chat.template.html",
     controller: function GameController($scope, $http) {
@@ -8,9 +10,27 @@ gameModule.component("chat", {
             $('#chat-input').val('');
           });
 
+
+          // $(window).scroll($.debounce( 250, true, function(){
+          //   $('#scrollMsg').html('SCROLLING!');
+          // }));
+          // $(window).scroll($.debounce( 250, function(){
+          //   $('#scrollMsg').html('DONE!');
+          // }));
+
            socket.on('addToChat', function(data) {
-             $('#chat-text').append('<div>' + data + '</div>');
-             console.log("Message recieved");
+             if (isDarker) {
+               $('#chat-text').append("<div class='chat-message dark'>" + data + '</div>');
+             }
+             else {
+               $('#chat-text').append("<div class='chat-message'>" + data + '</div>');
+             }
+             isDarker = !isDarker;
+
+             // var scroll = $('#chat-text');
+             // scroll.scrollTop(scroll.scrollHeight);
+             var element = document.getElementById('chat-text');
+             element.scrollTop = element.scrollHeight;
            });
         }
       }
