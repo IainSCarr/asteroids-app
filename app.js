@@ -325,3 +325,6 @@ setInterval(function(){
     socket.emit('newPositions', pack);
   }
 }, 1000/25)
+
+module.exports.Player = Player;
+module.exports.Bullet = Bullet;

@@ -1,9 +1,10 @@
 const assert = require('assert');
 const schemas = require("../schemas");
 const mongoose = require("mongoose");
-const uri = "mongodb+srv://admin:soft355@ic-cluster-snuim.mongodb.net/Asteroids?retryWrites=true&w=majority";
 
 describe('Database', function() {
+  let uri = "mongodb+srv://admin:soft355@ic-cluster-snuim.mongodb.net/Asteroids?retryWrites=true&w=majority";
+
   before(function (done) {
     mongoose.connect(uri, {useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false}, done);
   });
