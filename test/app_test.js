@@ -4,13 +4,6 @@ const app = require('../app.js');
 
 describe('Server', function() {
   describe('Main Page', function() {
-    // it('Content', function(done) {
-    //     request('http://localhost:9000' , function(error, response, body) {
-    //         expect(body).to.equal('Hello World');
-    //         done();
-    //     });
-    // });
-
     it('Status', function(done) {
         request('http://localhost:9000' , function(error, response, body) {
             expect(response.statusCode).to.equal(200);
