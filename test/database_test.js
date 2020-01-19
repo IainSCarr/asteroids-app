@@ -1,6 +1,6 @@
-const assert = require('assert');
 const schemas = require("../schemas");
 const mongoose = require("mongoose");
+const assert = require('chai').assert;
 
 describe('Database', function() {
   let uri = "mongodb+srv://admin:soft355@ic-cluster-snuim.mongodb.net/Asteroids?retryWrites=true&w=majority";
@@ -10,13 +10,16 @@ describe('Database', function() {
   });
 
   describe('Creation', function() {
+    let uniqueName = "Test Score " + Math.random().toString();
+    let player = new Player(uniqueName);
+
     afterEach(function(done) {
-      schemas.Score.findOneAndRemove({name:'Test Score'}).then(done());
+      schemas.Score.findOneAndRemove({name:uniqueName}).then(done()).catch(done);
     });
 
-    it('Creating a score', (done) => {
+    it('new scores can be added to the databse', (done) => {
         var score = new schemas.Score({
-          name: "Test Score",
+          name: uniqueName,
           score: 50
         });
         score.save().then(() => {
