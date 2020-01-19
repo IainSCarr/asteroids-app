@@ -31,7 +31,7 @@ describe('Player', function() {
   });
 
   describe('Controls', function() {
-    beforeEach(function(done) {
+    beforeEach(function() {
       player.reset();
       player.pressingRight = false;
       player.pressingLeft = false;
@@ -39,7 +39,6 @@ describe('Player', function() {
       player.isShooting = false;
       player.x = 10;
       player.y = 10;
-      done();
     });
 
     it('player moves forwards when up arrow is pressed', function() {
@@ -66,4 +65,24 @@ describe('Player', function() {
       assert.strictEqual(player.canShoot, false, 'shooting is diabled after shot is fired');
     });
   });
+
+  describe('Damage', function() {
+    beforeEach(function(){
+      player.lives = 3;
+      player.health = player.maxHealth;
+    });
+
+    it('player loses health after taking damage', function(){
+      player.takeDamage("attacker");
+      assert.isBelow(player.health, player.maxHealth, 'player has less health than maximum');
+    });
+    it('player loses a life after taking 5 damage', function(){
+      player.takeDamage("attacker");
+      player.takeDamage("attacker");
+      player.takeDamage("attacker");
+      player.takeDamage("attacker");
+      player.takeDamage("attacker");
+      assert.isBelow(player.lives, 3, 'player has less than 3 lives');
+    });
+  })
 });
