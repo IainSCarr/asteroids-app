@@ -5,7 +5,7 @@ const app = require('../app');
 
 describe('Server', function() {
   describe('Main Page', function() {
-    it('Status', function(done) {
+    it('status code of index is 200', function(done) {
         request('http://localhost:9000' , function(error, response, body) {
             expect(response.statusCode).to.equal(200);
             done();
@@ -14,7 +14,7 @@ describe('Server', function() {
   });
 
   describe("Invalid Requests", function() {
-    it('Invalid Directory', function(done) {
+    it('invalid directory returns 404 code', function(done) {
       request('http://localhost:9000/notreal', function(error, response, body) {
         expect(response.statusCode).to.equal(404);
         done();
