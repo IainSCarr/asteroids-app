@@ -1,6 +1,7 @@
 const schemas = require("../schemas");
 const mongoose = require("mongoose");
 const assert = require('chai').assert;
+const Player = require('../app').Player;
 
 describe('Database', function() {
   let uri = "mongodb+srv://admin:soft355@ic-cluster-snuim.mongodb.net/Asteroids?retryWrites=true&w=majority";
