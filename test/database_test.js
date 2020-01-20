@@ -11,7 +11,6 @@ describe('Database', function() {
 
   describe('Creation', function() {
     let uniqueName = "Test Score " + Math.random().toString();
-    let player = new Player(uniqueName);
 
     afterEach(function(done) {
       schemas.Score.findOneAndRemove({name:uniqueName}).then(done()).catch(done);
