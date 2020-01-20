@@ -2,7 +2,7 @@ const assert = require('chai').assert;
 const Player = require('../app').Player;
 
 describe('Player', function() {
-  let player = new Player(0);
+  let player = new Player(0, 0);
 
   after(function() {
     delete player;
