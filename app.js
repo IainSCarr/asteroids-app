@@ -286,9 +286,9 @@ Bullet.list = {};
 
 Bullet.update = function(pin) {
   var pack = [];
-  for(var i in Bullet.list) {
+  for(var i in Bullet.list) { // for all bullets created
     var bullet = Bullet.list[i];
-    if (bullet.serverPin == pin) {
+    if (bullet.serverPin == pin) { // if this bullet is in requested room
       bullet.update();
       if (bullet.toRemove == true)
         delete Bullet.list[i];
@@ -344,15 +344,15 @@ io.sockets.on('connection', function(socket) {
 // </editor-fold>
 
 setInterval(function(){
-  for(pin of serverPinList) {
+  for(pin of serverPinList) { // for each room
     var pack = {
-      player:Player.update(pin),
-      bullet:Bullet.update(pin)
+      player:Player.update(pin), // get information of players in room
+      bullet:Bullet.update(pin) // get information of bullets in room
     };
 
-    io.in(pin).emit('newPositions', pack);
+    io.in(pin).emit('newPositions', pack); // send information to room
   }
-}, 1000/25)
+}, 1000/25) // 25 times per second
 
 module.exports.Player = Player;
 module.exports.Bullet = Bullet;
