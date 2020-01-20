@@ -22,7 +22,7 @@ describe('Player', function() {
     it('player moves forwards when up arrow is pressed', function() {
       player.pressingUp = true;
       player.update();
-      assert.notEqual(player.y, 10, 'player is not in original position')
+      assert.strictEqual(player.y, 10 + player.velocity[1], 'player moves forwards correct amount')
     });
 
     it('player turns right when right arrow is pressed', function() {
