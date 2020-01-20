@@ -6,17 +6,9 @@ gameModule.component("chat", {
         $scope.initGame = function() {
           $('#chat-form').submit( function(e) {
             e.preventDefault();
-            socket.emit('sendMessage', $('#chat-input').val());
-            $('#chat-input').val('');
+            socket.emit('sendMessage', $('#chat-input').val()); // send message to server
+            $('#chat-input').val(''); // reset input
           });
-
-
-          // $(window).scroll($.debounce( 250, true, function(){
-          //   $('#scrollMsg').html('SCROLLING!');
-          // }));
-          // $(window).scroll($.debounce( 250, function(){
-          //   $('#scrollMsg').html('DONE!');
-          // }));
 
            socket.on('addToChat', function(data) {
              if (isDarker) {
@@ -25,12 +17,10 @@ gameModule.component("chat", {
              else {
                $('#chat-text').append("<div class='chat-message'>" + data + '</div>');
              }
-             isDarker = !isDarker;
+             isDarker = !isDarker; // alternate look
 
-             // var scroll = $('#chat-text');
-             // scroll.scrollTop(scroll.scrollHeight);
-             var element = document.getElementById('chat-text');
-             element.scrollTop = element.scrollHeight;
+             var element = document.getElementById('#chat-text');
+             element.scrollTop = element.scrollHeight; // scroll chat window to bottom to view new message
            });
         }
       }
