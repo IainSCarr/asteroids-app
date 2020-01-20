@@ -270,11 +270,11 @@ class Bullet extends Entity {
           if (this.getDistance(player) < 12 && this.parent !== player.id) { // if collision has occured
             var parent = Player.list[this.parent];
             player.takeDamage(parent.name);
-            if (parent) {
+            if (parent) { // if still in game
               parent.score += 10;
-              io.in(player.serverPin).emit('updateInformation', {player:Player.getInfo(player.serverPin)})
+              io.in(player.serverPin).emit('updateInformation', {player:Player.getInfo(player.serverPin)}) // send updated score to room
             }
-            this.toRemove = true;
+            this.toRemove = true; // set to be deleted on next tick of game
           }
         }
       }
