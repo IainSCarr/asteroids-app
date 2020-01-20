@@ -24,12 +24,17 @@ app.get('/highscores', function(request, response) {
   });
 });
 
-server.listen(9000, function() {
-  mongoose.connect(uri, {useNewUrlParser: true, useUnifiedTopology: true}).then((test) => {
-    console.log("Connected to DB");
-  });
+mongoose.connect(uri, {useNewUrlParser: true, useUnifiedTopology: true});
+const database = mongoose.connection;
+database.on("open", () => {
+  console.log("> MongoDB successfully connected");
+});
+database.on("error", (err) => {
+  console.log("> MongoDB event error: " + err);
+});
 
-  console.log("Listening on 9000");
+server.listen(9000, function() {
+  console.log("> Server running at: http://localhost:9000/");
 });
 
 var Socket_List = {};
@@ -152,11 +157,11 @@ class Player extends Entity {
         io.sockets.emit('updateHighscores', {});
       }
       else if (scores[scores.length - 1].score < this.score) {
-        var score = new schemas.Score({
+        var newScore = new schemas.Score({
           name: this.name,
           score: this.score
         });
-        score.save();
+        newScore.save();
         io.sockets.emit('updateHighscores', {});
       }
     }.bind(this));
@@ -281,7 +286,8 @@ io.sockets.on('connection', function(socket) {
   socket.id = Math.random();
   Socket_List[socket.id] = socket;
 
-  socket.on('disconnect', function(data) {
+  socket.on('disconnect', function() {
+    console.log('Socket disconnected');
     var p = Player.list[socket.id];
     if (p) { // if player exists and not a glitch
       for (var i in Socket_List) {
@@ -319,3 +325,6 @@ setInterval(function(){
     socket.emit('newPositions', pack);
   }
 }, 1000/25)
+
+module.exports.Player = Player;
+module.exports.Bullet = Bullet;
