@@ -9,6 +9,8 @@ var io = require('socket.io')(server);
 
 var uri = "mongodb+srv://admin:soft355@ic-cluster-snuim.mongodb.net/Asteroids?retryWrites=true&w=majority";
 
+// <editor-fold> Express *******************************************************
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("client"));
 app.use('/client', express.static(__dirname + '/client'));
@@ -24,6 +26,14 @@ app.get('/highscores', function(request, response) {
   });
 });
 
+// </editor-fold>
+
+server.listen(9000, function() {
+  console.log("> Server running at: http://localhost:9000/");
+});
+
+// <editor-fold> Database *******************************************************
+
 mongoose.connect(uri, {useNewUrlParser: true, useUnifiedTopology: true});
 const database = mongoose.connection;
 database.on("open", () => {
@@ -33,11 +43,9 @@ database.on("error", (err) => {
   console.log("> MongoDB event error: " + err);
 });
 
-server.listen(9000, function() {
-  console.log("> Server running at: http://localhost:9000/");
-});
+// </editor-fold>
 
-var Socket_List = {};
+// <editor-fold> Player *******************************************************
 
 class Player extends Entity {
   constructor(id, pin) {
@@ -231,6 +239,10 @@ Player.getInfo = function(pin) {
   return pack;
 }
 
+// </editor-fold>
+
+// <editor-fold> Bullet *******************************************************
+
 class Bullet extends Entity {
   constructor(parent, angle, pin) {
     super();
@@ -289,6 +301,10 @@ Bullet.update = function(pin) {
   return pack;
 }
 
+// </editor-fold>
+
+// <editor-fold> Socket.io *******************************************************
+
 var serverPinList = [];
 
 function addPin(pin) {
@@ -301,9 +317,6 @@ function addPin(pin) {
 io.sockets.on('connection', function(socket) {
   console.log('Socket connected');
 
-  //socket.id = Math.random();
-  Socket_List[socket.id] = socket;
-
   socket.on('disconnect', function() {
     console.log('Socket disconnected');
     var p = Player.list[socket.id];
@@ -311,7 +324,6 @@ io.sockets.on('connection', function(socket) {
       io.in(p.serverPin).emit('addToChat', p.name + ' disconnected');
     }
     Player.onDisconnect(socket);
-    delete Socket_List[socket.id];
   });
 
   socket.on('sendMessage', function(data) {
@@ -327,6 +339,8 @@ io.sockets.on('connection', function(socket) {
     io.in(data.pin).emit('updateInformation', {player:Player.getInfo(data.pin)});
   });
 });
+
+// </editor-fold>
 
 setInterval(function(){
   for(pin of serverPinList) {
