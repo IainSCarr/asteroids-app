@@ -7,7 +7,7 @@ var app = express();
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
 
-var uri = "mongodb+srv://admin:soft355@ic-cluster-snuim.mongodb.net/Asteroids?retryWrites=true&w=majority";
+const uri = "mongodb+srv://admin:soft355@ic-cluster-snuim.mongodb.net/Asteroids?retryWrites=true&w=majority";
 
 // <editor-fold> Express *******************************************************
 
@@ -70,8 +70,7 @@ class Player extends Entity {
   }
 
   updateDirection() {
-    if (this.pressingRight) {
-      if (!this.pressingLeft)
+    if (this.pressingRight && !this.pressingLeft) { // if user is pressing right and not pressing left at the same time
         this.direction = (this.direction + this.turnSpeed) % 360;
     }
     else if (this.pressingLeft)
@@ -80,17 +79,19 @@ class Player extends Entity {
 
   updateVelocity() {
     if (this.pressingUp) {
+      // update velocities
       this.velocity[0] += this.acceleration * Math.sin(this.direction * Math.PI / 180);
-    if (this.velocity[0] > this.maxSpeed)
-      this.velocity[0] = this.maxSpeed;
-    else if (this.velocity[0] < -this.maxSpeed)
-      this.velocity[0] = -this.maxSpeed;
+      this.velocity[1] -= this.acceleration * Math.cos(this.direction * Math.PI / 180);
 
-    this.velocity[1] -= this.acceleration * Math.cos(this.direction * Math.PI / 180);
+    if (this.velocity[0] > this.maxSpeed)
+      this.velocity[0] = this.maxSpeed; // limit max speed in positive X direction
+    else if (this.velocity[0] < -this.maxSpeed)
+      this.velocity[0] = -this.maxSpeed; // limit max speed negative X direction
+
     if (this.velocity[1] > this.maxSpeed)
-      this.velocity[1] = this.maxSpeed;
+      this.velocity[1] = this.maxSpeed; // limit max speed in positive y direction
     else if (this.velocity[1] < -this.maxSpeed)
-      this.velocity[1] = -this.maxSpeed;
+      this.velocity[1] = -this.maxSpeed; // limit max speed negative Y direction
     }
   }
 
@@ -102,7 +103,7 @@ class Player extends Entity {
   }
 
   update() {
-    if (this.lives != 0) {
+    if (this.lives != 0) { // if player still has lives remaining
       this.updateDirection();
       this.updateVelocity();
       super.update();
@@ -113,10 +114,10 @@ class Player extends Entity {
 
   takeDamage(killer) {
     this.health -= 1;
-    if (this.health <= 0) {
+    if (this.health <= 0) { // if health is below zero lose a life
       this.lives -= 1;
 
-      if (this.lives <= 0) {
+      if (this.lives <= 0) { // if number of lives is below zero lose game
         this.lose(killer);
       }
       else {
@@ -147,7 +148,7 @@ class Player extends Entity {
   }
 
   respawn() {
-    setTimeout((function() {
+    setTimeout((function() { // wait 10 seconds then reset player to default
       this.reset();
       this.score = 0;
       this.lives = 3;
@@ -157,7 +158,7 @@ class Player extends Entity {
 
   async saveScore() {
     db.getHighScores().then(function(scores) {
-      if (scores.length === 0) {
+      if (scores.length === 0) { // if there are no scores in the database
         var score = new schemas.Score({
           name: this.name,
           score: this.score
@@ -165,7 +166,7 @@ class Player extends Entity {
         score.save();
         io.emit('updateHighscores', {});
       }
-      else if (scores[scores.length - 1].score < this.score) {
+      else if (scores[scores.length - 1].score < this.score) { // if the lowest score in highscores is less than this score
         var newScore = new schemas.Score({
           name: this.name,
           score: this.score
@@ -208,11 +209,11 @@ Player.onDisconnect = function(socket) {
 
 Player.update = function(pin) {
   var pack = [];
-  for(var i in Player.list) {
+  for(var i in Player.list) { // for all players connected
     var player = Player.list[i];
-    if (player.serverPin == pin) {
+    if (player.serverPin == pin) { // if this player is in the requested room
       player.update();
-      pack.push({
+      pack.push({ // add data to package
         x:player.x,
         y:player.y,
         angle:player.direction,
@@ -226,10 +227,10 @@ Player.update = function(pin) {
 
 Player.getInfo = function(pin) {
   var pack = [];
-  for(var i in Player.list) {
+  for(var i in Player.list) { // for all players connected
     var player = Player.list[i];
-    if (player.serverPin == pin) {
-      pack.push({
+    if (player.serverPin == pin) {  // if this player is in the requested room
+      pack.push({ // add data to package
         name:player.name,
         score:player.score,
         lives:player.lives
