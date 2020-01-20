@@ -1,6 +1,14 @@
+@font-face {
+  font-family: hyperspace;
+  src: url(HyperspaceBold.otf);
+}
+
 h1 {
-  font-family: 'Fredoka One', cursive;
   text-align: center;
+}
+
+.rightMargin {
+  padding: 0px;
 }
 
 #ctx {
@@ -24,6 +32,7 @@ h1 {
 }
 
 body {
+  font-family: hyperspace;
   color: white;
   background-color: black;
 }
@@ -34,6 +43,11 @@ body {
 
 #loginContainer {
   visibility: visible;
+}
+
+#login {
+  padding:10px;
+  margin:30px;
 }
 
 #gameContainer {

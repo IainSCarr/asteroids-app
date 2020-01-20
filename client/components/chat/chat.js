@@ -20,7 +20,9 @@ gameModule.component("chat", {
              isDarker = !isDarker; // alternate look
 
              var element = document.getElementById('#chat-text');
-             element.scrollTop = element.scrollHeight; // scroll chat window to bottom to view new message
+             if (element) {
+               element.scrollTop = element.scrollHeight; // scroll chat window to bottom to view new message
+             }
            });
         }
       }

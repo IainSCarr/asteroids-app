@@ -152,7 +152,7 @@ class Player extends Entity {
       this.reset();
       this.score = 0;
       this.lives = 3;
-      io.in(this.serverPin).emit('updateInformation', {player:Player.getInfo()});
+      io.in(this.serverPin).emit('updateInformation', {player:Player.getInfo(this.serverPin)});
     }).bind(this), 10000);
   }
 
