@@ -40,9 +40,10 @@ server.listen(9000, function() {
 var Socket_List = {};
 
 class Player extends Entity {
-  constructor(id) {
+  constructor(id, pin) {
     super();
     this.id = id;
+    this.serverPin = pin;
     this.name = "";
     this.pressingRight = false;
     this.pressingLeft = false;
@@ -86,7 +87,7 @@ class Player extends Entity {
   }
 
   shootBullet() {
-    var newBullet = new Bullet(this.id, this.direction);
+    var newBullet = new Bullet(this.id, this.direction, this.serverPin);
     newBullet.x = this.x;
     newBullet.y = this.y;
     this.canShoot = false;
@@ -117,15 +118,15 @@ class Player extends Entity {
   }
 
   die(killer){
-    io.sockets.emit('addToChat', '<strong>' + killer + '</strong>' + ' has killed <strong>' + this.name + '</strong>');
-    io.sockets.emit('updateInformation', {player:Player.getInfo()});
+    io.in(this.serverPin).emit('addToChat', '<strong>' + killer + '</strong>' + ' has killed <strong>' + this.name + '</strong>');
+    io.in(this.serverPin).emit('updateInformation', {player:Player.getInfo(this.serverPin)});
     this.reset();
   }
 
   lose(killer) {
     this.saveScore();
-    io.sockets.emit('addToChat', '<strong>' + killer + '</strong>' + ' has killed <strong>' + this.name + '</strong>');
-    io.sockets.emit('addToChat', '<strong>' + this.name + '</strong> has ran out of lives. Score saved. Restarting in 10 seconds.');
+    io.in(this.serverPin).emit('addToChat', '<strong>' + killer + '</strong>' + ' has killed <strong>' + this.name + '</strong>');
+    io.in(this.serverPin).emit('addToChat', '<strong>' + this.name + '</strong> has ran out of lives. Score saved. Restarting in 10 seconds.');
     this.respawn();
   }
 
@@ -142,7 +143,7 @@ class Player extends Entity {
       this.reset();
       this.score = 0;
       this.lives = 3;
-      io.sockets.emit('updateInformation', {player:Player.getInfo()});
+      io.in(this.serverPin).emit('updateInformation', {player:Player.getInfo()});
     }).bind(this), 10000);
   }
 
@@ -154,7 +155,7 @@ class Player extends Entity {
           score: this.score
         });
         score.save();
-        io.sockets.emit('updateHighscores', {});
+        io.emit('updateHighscores', {});
       }
       else if (scores[scores.length - 1].score < this.score) {
         var newScore = new schemas.Score({
@@ -162,15 +163,15 @@ class Player extends Entity {
           score: this.score
         });
         newScore.save();
-        io.sockets.emit('updateHighscores', {});
+        io.emit('updateHighscores', {});
       }
     }.bind(this));
   }
 }
 
 Player.list = {};
-Player.onConnect = function(socket) {
-  var player = new Player(socket.id);
+Player.onConnect = function(socket, pin) {
+  var player = new Player(socket.id, pin);
   socket.on('keyPress', function(data) {
     if (data.inputId === 'left')
       player.pressingLeft = data.state;
@@ -190,45 +191,51 @@ Player.onDisconnect = function(socket) {
   var p = Player.list[socket.id];
   if (p) { // if player exists and not a glitch
     Player.list[socket.id].saveScore().then(function() {
+      var pin = p.serverPin;
       delete Player.list[socket.id];
-      io.sockets.emit('updateInformation', {player:Player.getInfo()});
+      io.in(pin).emit('updateInformation', {player:Player.getInfo(pin)});
     });
   }
 }
 
-Player.update = function() {
+Player.update = function(pin) {
   var pack = [];
   for(var i in Player.list) {
     var player = Player.list[i];
-    player.update();
-    pack.push({
-      x:player.x,
-      y:player.y,
-      angle:player.direction,
-      engine:player.pressingUp,
-      lives:player.lives
-    });
+    if (player.serverPin == pin) {
+      player.update();
+      pack.push({
+        x:player.x,
+        y:player.y,
+        angle:player.direction,
+        engine:player.pressingUp,
+        lives:player.lives
+      });
+    }
   }
   return pack;
 }
 
-Player.getInfo = function() {
+Player.getInfo = function(pin) {
   var pack = [];
   for(var i in Player.list) {
     var player = Player.list[i];
-    pack.push({
-      name:player.name,
-      score:player.score,
-      lives:player.lives
-    });
+    if (player.serverPin == pin) {
+      pack.push({
+        name:player.name,
+        score:player.score,
+        lives:player.lives
+      });
+    }
   }
   return pack;
 }
 
 class Bullet extends Entity {
-  constructor(parent, angle) {
+  constructor(parent, angle, pin) {
     super();
     this.parent = parent;
+    this.serverPin = pin;
     this.id = Math.random();
     this.speed = 20;
     this.velocity = [Math.sin(angle * Math.PI / 180) * this.speed, Math.cos(angle * Math.PI / 180) * -this.speed];
@@ -245,15 +252,17 @@ class Bullet extends Entity {
 
     for (var i in Player.list) { // loop through players
       var player = Player.list[i];
-      if (player.lives > 0 && player.health > 0) { // if player is alive
-        if (this.getDistance(player) < 12 && this.parent !== player.id) { // if collision has occured
-          var parent = Player.list[this.parent];
-          player.takeDamage(parent.name);
-          if (parent) {
-            parent.score += 10;
-            io.sockets.emit('updateInformation', {player:Player.getInfo()});
+      if (player.serverPin == this.serverPin) { // if the player is in the same server
+        if (player.lives > 0 && player.health > 0) { // if player is alive
+          if (this.getDistance(player) < 12 && this.parent !== player.id) { // if collision has occured
+            var parent = Player.list[this.parent];
+            player.takeDamage(parent.name);
+            if (parent) {
+              parent.score += 10;
+              io.in(player.serverPin).emit('updateInformation', {player:Player.getInfo(player.serverPin)})
+            }
+            this.toRemove = true;
           }
-          this.toRemove = true;
         }
       }
     }
@@ -262,67 +271,71 @@ class Bullet extends Entity {
 
 Bullet.list = {};
 
-Bullet.update = function() {
+Bullet.update = function(pin) {
   var pack = [];
   for(var i in Bullet.list) {
     var bullet = Bullet.list[i];
-    bullet.update();
-
-    if (bullet.toRemove == true)
-      delete Bullet.list[i];
-    else
-      pack.push({
-        x:bullet.x,
-        y:bullet.y
-      });
+    if (bullet.serverPin == pin) {
+      bullet.update();
+      if (bullet.toRemove == true)
+        delete Bullet.list[i];
+      else
+        pack.push({
+          x:bullet.x,
+          y:bullet.y
+        });
+    }
   }
-
   return pack;
 }
+
+var serverPinList = [];
+
+function addPin(pin) {
+  if (serverPinList.indexOf(pin) === -1) {
+    serverPinList.push(pin);
+    console.log("New room created: " + pin);
+  }
+};
 
 io.sockets.on('connection', function(socket) {
   console.log('Socket connected');
 
-  socket.id = Math.random();
+  //socket.id = Math.random();
   Socket_List[socket.id] = socket;
 
   socket.on('disconnect', function() {
     console.log('Socket disconnected');
     var p = Player.list[socket.id];
     if (p) { // if player exists and not a glitch
-      for (var i in Socket_List) {
-        Socket_List[i].emit('addToChat', Player.list[socket.id].name + ' disconnected');
-      }
+      io.in(p.serverPin).emit('addToChat', p.name + ' disconnected');
     }
     Player.onDisconnect(socket);
     delete Socket_List[socket.id];
   });
 
   socket.on('sendMessage', function(data) {
-    for (var i in Socket_List) {
-      Socket_List[i].emit('addToChat', '<strong>' + Player.list[socket.id].name + ':</strong> ' + data);
-    }
+    io.in(Player.list[socket.id].serverPin).emit('addToChat', '<strong>' + Player.list[socket.id].name + ':</strong> ' + data);
   });
 
   socket.on('joinGame', function(data) {
-    Player.onConnect(socket);
-    Player.list[socket.id].name = data;
-    for (var i in Socket_List) {
-      Socket_List[i].emit('addToChat', data + ' connected');
-      Socket_List[i].emit('updateInformation', {player:Player.getInfo()});
-    }
+    socket.join(data.pin);
+    addPin(data.pin);
+    Player.onConnect(socket, data.pin);
+    Player.list[socket.id].name = data.username;
+    io.in(data.pin).emit('addToChat', data.username + ' connected');
+    io.in(data.pin).emit('updateInformation', {player:Player.getInfo(data.pin)});
   });
 });
 
 setInterval(function(){
-  var pack = {
-    player:Player.update(),
-    bullet:Bullet.update()
-  };
+  for(pin of serverPinList) {
+    var pack = {
+      player:Player.update(pin),
+      bullet:Bullet.update(pin)
+    };
 
-  for(var i in Socket_List) {
-    var socket = Socket_List[i];
-    socket.emit('newPositions', pack);
+    io.in(pin).emit('newPositions', pack);
   }
 }, 1000/25)
 

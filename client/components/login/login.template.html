@@ -6,6 +6,13 @@
     <label for="name">Name</label>
     <input type="text" class="form-control" id="username" maxlength="10" required>
   </div>
-  <button type="submit" class="btn btn-light btn-lg btn-block">JOIN GAME</button>
+  <div class="form-group">
+    <label for="name">Server Pin (e.g 12345)</label>
+    <input type="number" class="form-control" id="pin" min="10000" max="99999" required>
+  </div>
+  <div>
+      <button type="submit" class="btn btn-light btn-lg btn-block">JOIN SERVER</button>
+  </div>
+
 </form>
 </section>
