@@ -38,6 +38,8 @@ gameModule.component("game", {
           ctx = $('#ctx')[0].getContext('2d');
           socket.on('newPositions',function(data){
             ctx.clearRect(0,0,700,700);
+
+            // draw all players
             for (var i = 0; i < data.player.length; i++) {
               if (data.player[i].lives > 0) { // if player is alive
                 ctx.save();
@@ -53,7 +55,7 @@ gameModule.component("game", {
               }
             }
 
-
+            // draw all bullets
             for (var i = 0; i < data.bullet.length; i++) {
               ctx.save();
               ctx.beginPath();
@@ -67,6 +69,7 @@ gameModule.component("game", {
           socket.on('updateInformation', function(data) {
             let playerInfo = $('#playerInfo');
             playerInfo.empty();
+            // draw all player information
             for (var i = 0; i < data.player.length; i++) {
               let info = "<div style='display:inline-block;margin: 0 auto;'><div style='display:inline-block;text-align:left;'><strong>" + data.player[i].name + "</strong></div><div style='display:inline-block;margin-left:20px;margin-right:40px;'>";
               for (var j = 0; j < data.player[i].lives; j++) {

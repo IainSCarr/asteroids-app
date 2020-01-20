@@ -2,7 +2,7 @@ var isDarker = false;
 
 gameModule.component("chat", {
     templateUrl: "components/chat/chat.template.html",
-    controller: function GameController($scope, $http) {
+    controller: function ChatController($scope, $http) {
         $scope.initGame = function() {
           $('#chat-form').submit( function(e) {
             e.preventDefault();
