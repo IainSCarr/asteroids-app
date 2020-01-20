@@ -309,7 +309,7 @@ Bullet.update = function(pin) {
 var serverPinList = [];
 
 function addPin(pin) {
-  if (serverPinList.indexOf(pin) === -1) {
+  if (serverPinList.indexOf(pin) === -1) { // if pin has not already been used
     serverPinList.push(pin);
     console.log("New room created: " + pin);
   }
@@ -332,10 +332,10 @@ io.sockets.on('connection', function(socket) {
   });
 
   socket.on('joinGame', function(data) {
-    socket.join(data.pin);
+    socket.join(data.pin); // join room
     addPin(data.pin);
     Player.onConnect(socket, data.pin);
-    Player.list[socket.id].name = data.username;
+    Player.list[socket.id].name = data.username; // set username
     io.in(data.pin).emit('addToChat', data.username + ' connected');
     io.in(data.pin).emit('updateInformation', {player:Player.getInfo(data.pin)});
   });
