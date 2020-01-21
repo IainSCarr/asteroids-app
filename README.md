@@ -27,11 +27,13 @@ JavaScript) and a server using Node.js.
 
 **3.** Set directory to downloaded file
 
-**4.** run node app.js
+**4.** run npm install to download dependencies
+
+**5.** run node app.js to start server
 
   - for testing run npm test
 
-**5.** Open browser and navigate to localhost:9000
+**6.** Open browser and navigate to localhost:9000
 
 > **Note:** You must have Node.js and the npm command line interface installed on your machine
 
@@ -80,6 +82,7 @@ JavaScript) and a server using Node.js.
 * **jQuery** - enables simplification of Javascript programming
 * **Bootstrap** - for easy CSS styling
 * **Mocha and Chai** - to implement unit tests
+* **ESLint** - to maintain code quality
 * **Atom w/ custom-folds package** - code editor with regions support
 * **Google Forms** - to receive usability testing feedback
 * **Jenkins w/ Blue Ocean** - used for continuous integration pipeline
