@@ -13,12 +13,12 @@
 ****
 
 ## About
-This project has been undertaken as part of the SOFT355 module at Plymouth University.
+This project has been undertaken as part of the SOFT355 module at Plymouth University and is a multiplayer game in the style of the 1979 classic Asteroids.
 
 The objective for this project was to create an interactive distributed application comprising of a client constructed using dynamic web technologies (HTML, CSS and
 JavaScript) and a server using Node.js.
 
-This application is a multiplayer game in the style of the 1979 classic Asteroids.
+****
 
 ## Getting Started
 **1.** Download or clone this repository
@@ -86,6 +86,10 @@ This application is a multiplayer game in the style of the 1979 classic Asteroid
 * **Github w/ Github Desktop** - remote repository hosting for version control using Git
 * **Google Docs** - to create requirements and analysis document
 
+****
+
+## Release
+> Due to copyright considerations this will remain a strictly private project.
 
 ****
 ## Developer
