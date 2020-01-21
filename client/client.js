@@ -1,3 +1,5 @@
+/* global socket, gameModule */
+
 var socket = io();
 var gameModule = angular.module("asteroidsapp", ["ngRoute"]);
 
@@ -15,4 +17,4 @@ function joinGame() { // hide and show relevant components
   $("#chatContainer").css("visibility", "visible");
   $("#loginContainer").empty();
   $("#gameContainer").css("visibility", "visible");
-};
+}

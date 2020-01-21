@@ -313,7 +313,7 @@ function addPin(pin) {
     serverPinList.push(pin);
     console.log("New room created: " + pin);
   }
-};
+}
 
 io.sockets.on('connection', function(socket) {
   console.log('Socket connected');
@@ -344,7 +344,7 @@ io.sockets.on('connection', function(socket) {
 // </editor-fold>
 
 setInterval(function(){
-  for(pin of serverPinList) { // for each room
+  for(var pin of serverPinList) { // for each room
     var pack = {
       player:Player.update(pin), // get information of players in room
       bullet:Bullet.update(pin) // get information of bullets in room

@@ -24,7 +24,7 @@ describe('Database', function() {
         score.save().then(() => {
           assert(!score.isNew);
           done();
-        }).catch(done);;
+        }).catch(done);
     });
   });
 });
