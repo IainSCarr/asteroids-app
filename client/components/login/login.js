@@ -1,14 +1,10 @@
 gameModule.component("login", {
     templateUrl: "components/login/login.template.html",
-    controller: function GameController($scope, $http) {
+    controller: function LoginController($scope, $http) {
         $scope.init = function() {
-          $('#joinForm').submit( function() {
-            socket.emit('joinGame', { username: $('#username').val(), pin: ("" + $('#pin').val())});
+          $('#joinForm').submit( function() { // on form submission
+            socket.emit('joinGame', { username: $('#username').val(), pin: ("" + $('#pin').val())}); // send name and pin to server
             joinGame();
-          });
-
-          socket.on('connectToRoom',function(data) {
-            console.log(data);
           });
       }
     }

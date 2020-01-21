@@ -7,7 +7,9 @@ var app = express();
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
 
-var uri = "mongodb+srv://admin:soft355@ic-cluster-snuim.mongodb.net/Asteroids?retryWrites=true&w=majority";
+const uri = "mongodb+srv://admin:soft355@ic-cluster-snuim.mongodb.net/Asteroids?retryWrites=true&w=majority";
+
+// <editor-fold> Express *******************************************************
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("client"));
@@ -24,6 +26,14 @@ app.get('/highscores', function(request, response) {
   });
 });
 
+// </editor-fold>
+
+server.listen(9000, function() {
+  console.log("> Server running at: http://localhost:9000/");
+});
+
+// <editor-fold> Database *******************************************************
+
 mongoose.connect(uri, {useNewUrlParser: true, useUnifiedTopology: true});
 const database = mongoose.connection;
 database.on("open", () => {
@@ -33,11 +43,9 @@ database.on("error", (err) => {
   console.log("> MongoDB event error: " + err);
 });
 
-server.listen(9000, function() {
-  console.log("> Server running at: http://localhost:9000/");
-});
+// </editor-fold>
 
-var Socket_List = {};
+// <editor-fold> Player *******************************************************
 
 class Player extends Entity {
   constructor(id, pin) {
@@ -62,8 +70,7 @@ class Player extends Entity {
   }
 
   updateDirection() {
-    if (this.pressingRight) {
-      if (!this.pressingLeft)
+    if (this.pressingRight && !this.pressingLeft) { // if user is pressing right and not pressing left at the same time
         this.direction = (this.direction + this.turnSpeed) % 360;
     }
     else if (this.pressingLeft)
@@ -72,17 +79,19 @@ class Player extends Entity {
 
   updateVelocity() {
     if (this.pressingUp) {
+      // update velocities
       this.velocity[0] += this.acceleration * Math.sin(this.direction * Math.PI / 180);
-    if (this.velocity[0] > this.maxSpeed)
-      this.velocity[0] = this.maxSpeed;
-    else if (this.velocity[0] < -this.maxSpeed)
-      this.velocity[0] = -this.maxSpeed;
+      this.velocity[1] -= this.acceleration * Math.cos(this.direction * Math.PI / 180);
 
-    this.velocity[1] -= this.acceleration * Math.cos(this.direction * Math.PI / 180);
+    if (this.velocity[0] > this.maxSpeed)
+      this.velocity[0] = this.maxSpeed; // limit max speed in positive X direction
+    else if (this.velocity[0] < -this.maxSpeed)
+      this.velocity[0] = -this.maxSpeed; // limit max speed negative X direction
+
     if (this.velocity[1] > this.maxSpeed)
-      this.velocity[1] = this.maxSpeed;
+      this.velocity[1] = this.maxSpeed; // limit max speed in positive y direction
     else if (this.velocity[1] < -this.maxSpeed)
-      this.velocity[1] = -this.maxSpeed;
+      this.velocity[1] = -this.maxSpeed; // limit max speed negative Y direction
     }
   }
 
@@ -94,7 +103,7 @@ class Player extends Entity {
   }
 
   update() {
-    if (this.lives != 0) {
+    if (this.lives != 0) { // if player still has lives remaining
       this.updateDirection();
       this.updateVelocity();
       super.update();
@@ -105,10 +114,10 @@ class Player extends Entity {
 
   takeDamage(killer) {
     this.health -= 1;
-    if (this.health <= 0) {
+    if (this.health <= 0) { // if health is below zero lose a life
       this.lives -= 1;
 
-      if (this.lives <= 0) {
+      if (this.lives <= 0) { // if number of lives is below zero lose game
         this.lose(killer);
       }
       else {
@@ -139,17 +148,17 @@ class Player extends Entity {
   }
 
   respawn() {
-    setTimeout((function() {
+    setTimeout((function() { // wait 10 seconds then reset player to default
       this.reset();
       this.score = 0;
       this.lives = 3;
-      io.in(this.serverPin).emit('updateInformation', {player:Player.getInfo()});
+      io.in(this.serverPin).emit('updateInformation', {player:Player.getInfo(this.serverPin)});
     }).bind(this), 10000);
   }
 
   async saveScore() {
     db.getHighScores().then(function(scores) {
-      if (scores.length === 0) {
+      if (scores.length === 0) { // if there are no scores in the database
         var score = new schemas.Score({
           name: this.name,
           score: this.score
@@ -157,7 +166,7 @@ class Player extends Entity {
         score.save();
         io.emit('updateHighscores', {});
       }
-      else if (scores[scores.length - 1].score < this.score) {
+      else if (scores[scores.length - 1].score < this.score) { // if the lowest score in highscores is less than this score
         var newScore = new schemas.Score({
           name: this.name,
           score: this.score
@@ -200,11 +209,11 @@ Player.onDisconnect = function(socket) {
 
 Player.update = function(pin) {
   var pack = [];
-  for(var i in Player.list) {
+  for(var i in Player.list) { // for all players connected
     var player = Player.list[i];
-    if (player.serverPin == pin) {
+    if (player.serverPin == pin) { // if this player is in the requested room
       player.update();
-      pack.push({
+      pack.push({ // add data to package
         x:player.x,
         y:player.y,
         angle:player.direction,
@@ -218,10 +227,10 @@ Player.update = function(pin) {
 
 Player.getInfo = function(pin) {
   var pack = [];
-  for(var i in Player.list) {
+  for(var i in Player.list) { // for all players connected
     var player = Player.list[i];
-    if (player.serverPin == pin) {
-      pack.push({
+    if (player.serverPin == pin) {  // if this player is in the requested room
+      pack.push({ // add data to package
         name:player.name,
         score:player.score,
         lives:player.lives
@@ -230,6 +239,10 @@ Player.getInfo = function(pin) {
   }
   return pack;
 }
+
+// </editor-fold>
+
+// <editor-fold> Bullet *******************************************************
 
 class Bullet extends Entity {
   constructor(parent, angle, pin) {
@@ -257,11 +270,11 @@ class Bullet extends Entity {
           if (this.getDistance(player) < 12 && this.parent !== player.id) { // if collision has occured
             var parent = Player.list[this.parent];
             player.takeDamage(parent.name);
-            if (parent) {
+            if (parent) { // if still in game
               parent.score += 10;
-              io.in(player.serverPin).emit('updateInformation', {player:Player.getInfo(player.serverPin)})
+              io.in(player.serverPin).emit('updateInformation', {player:Player.getInfo(player.serverPin)}) // send updated score to room
             }
-            this.toRemove = true;
+            this.toRemove = true; // set to be deleted on next tick of game
           }
         }
       }
@@ -273,9 +286,9 @@ Bullet.list = {};
 
 Bullet.update = function(pin) {
   var pack = [];
-  for(var i in Bullet.list) {
+  for(var i in Bullet.list) { // for all bullets created
     var bullet = Bullet.list[i];
-    if (bullet.serverPin == pin) {
+    if (bullet.serverPin == pin) { // if this bullet is in requested room
       bullet.update();
       if (bullet.toRemove == true)
         delete Bullet.list[i];
@@ -289,10 +302,14 @@ Bullet.update = function(pin) {
   return pack;
 }
 
+// </editor-fold>
+
+// <editor-fold> Socket.io *******************************************************
+
 var serverPinList = [];
 
 function addPin(pin) {
-  if (serverPinList.indexOf(pin) === -1) {
+  if (serverPinList.indexOf(pin) === -1) { // if pin has not already been used
     serverPinList.push(pin);
     console.log("New room created: " + pin);
   }
@@ -301,9 +318,6 @@ function addPin(pin) {
 io.sockets.on('connection', function(socket) {
   console.log('Socket connected');
 
-  //socket.id = Math.random();
-  Socket_List[socket.id] = socket;
-
   socket.on('disconnect', function() {
     console.log('Socket disconnected');
     var p = Player.list[socket.id];
@@ -311,7 +325,6 @@ io.sockets.on('connection', function(socket) {
       io.in(p.serverPin).emit('addToChat', p.name + ' disconnected');
     }
     Player.onDisconnect(socket);
-    delete Socket_List[socket.id];
   });
 
   socket.on('sendMessage', function(data) {
@@ -319,25 +332,27 @@ io.sockets.on('connection', function(socket) {
   });
 
   socket.on('joinGame', function(data) {
-    socket.join(data.pin);
+    socket.join(data.pin); // join room
     addPin(data.pin);
     Player.onConnect(socket, data.pin);
-    Player.list[socket.id].name = data.username;
+    Player.list[socket.id].name = data.username; // set username
     io.in(data.pin).emit('addToChat', data.username + ' connected');
     io.in(data.pin).emit('updateInformation', {player:Player.getInfo(data.pin)});
   });
 });
 
+// </editor-fold>
+
 setInterval(function(){
-  for(pin of serverPinList) {
+  for(pin of serverPinList) { // for each room
     var pack = {
-      player:Player.update(pin),
-      bullet:Bullet.update(pin)
+      player:Player.update(pin), // get information of players in room
+      bullet:Bullet.update(pin) // get information of bullets in room
     };
 
-    io.in(pin).emit('newPositions', pack);
+    io.in(pin).emit('newPositions', pack); // send information to room
   }
-}, 1000/25)
+}, 1000/25) // 25 times per second
 
 module.exports.Player = Player;
 module.exports.Bullet = Bullet;
